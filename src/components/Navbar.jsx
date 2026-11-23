@@ -6,6 +6,7 @@ import { friendlyError } from '../lib/format.js';
 
 // Links appear here as their pages are built. `roles` hides links a role cannot use.
 const LINKS = [
+  { to: '/', label: 'Chat', end: true },
   { to: '/catalogue', label: 'Catalogue' },
   { to: '/my-bookings', label: 'My Bookings' },
   { to: '/my-requests', label: 'My Requests', roles: ['student'] },
@@ -42,7 +43,7 @@ export default function Navbar() {
       <ul className="flex flex-wrap items-center gap-1">
         {LINKS.filter((link) => !link.roles || link.roles.includes(user.role)).map((link) => (
           <li key={link.to}>
-            <NavLink to={link.to} className={linkClass}>
+            <NavLink to={link.to} end={link.end} className={linkClass}>
               {link.label}
             </NavLink>
           </li>

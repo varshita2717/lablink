@@ -3,17 +3,23 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
 // Vendor code goes into separate, long-cached chunks so app releases do not invalidate it.
+// Groups are matched in order; firebase-ai comes last so the Firebase modules it shares
+// (app, util, logger) stay in firebase-core and the AI chunk loads only on the first chat message.
 const VENDOR_GROUPS = [
   {
     name: 'firebase-firestore',
-    test: /node_modules[\\/]@firebase[\\/](firestore|webchannel-wrapper)/,
+    test: /node_modules[\\/]@firebase[\\/](firestore|webchannel-wrapper)[\\/]/,
   },
-  { name: 'firebase-auth', test: /node_modules[\\/]@firebase[\\/]auth/ },
-  { name: 'firebase-core', test: /node_modules[\\/](@firebase|firebase)[\\/]/ },
+  { name: 'firebase-auth', test: /node_modules[\\/]@firebase[\\/]auth[\\/]/ },
+  {
+    name: 'firebase-core',
+    test: /node_modules[\\/](@firebase[\\/](?!ai[\\/])|firebase[\\/](?!ai[\\/]))/,
+  },
   {
     name: 'react',
     test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/,
   },
+  { name: 'firebase-ai', test: /node_modules[\\/](@firebase|firebase)[\\/]ai[\\/]/ },
 ];
 
 export default defineConfig({

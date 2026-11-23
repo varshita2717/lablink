@@ -18,18 +18,30 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 
-// Local development only: lets App Check accept a registered debug token.
-if (env.DEV && env.VITE_APPCHECK_DEBUG_TOKEN) {
-  self.FIREBASE_APPCHECK_DEBUG_TOKEN = env.VITE_APPCHECK_DEBUG_TOKEN;
+/**
+ * App Check (reCAPTCHA v3) is optional: it is initialised only when VITE_RECAPTCHA_SITE_KEY is set.
+ * Without it the app still runs; AI Logic calls fail if App Check is enforced for the project,
+ * and the chat then shows its "assistant unavailable" fallback.
+ * @returns {import('firebase/app-check').AppCheck | null}
+ */
+function initOptionalAppCheck() {
+  const siteKey = env.VITE_RECAPTCHA_SITE_KEY;
+  if (!siteKey) return null;
+  // Local development only: lets App Check accept a registered debug token.
+  if (env.DEV && env.VITE_APPCHECK_DEBUG_TOKEN) {
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = env.VITE_APPCHECK_DEBUG_TOKEN;
+  }
+  try {
+    return initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(siteKey),
+      isTokenAutoRefreshEnabled: true,
+    });
+  } catch (error) {
+    console.error('App Check could not start; continuing without it', error);
+    return null;
+  }
 }
 
-/** App Check (reCAPTCHA v3). Enforced in the console for AI Logic. Null if no site key is set. */
-export const appCheck = env.VITE_RECAPTCHA_SITE_KEY
-  ? initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider(env.VITE_RECAPTCHA_SITE_KEY),
-      isTokenAutoRefreshEnabled: true,
-    })
-  : null;
-
+export const appCheck = initOptionalAppCheck();
 export const auth = getAuth(app);
 export const db = getFirestore(app);
