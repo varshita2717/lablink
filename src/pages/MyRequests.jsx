@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useAsync from '../hooks/useAsync.js';
 import useAuth from '../hooks/useAuth.js';
@@ -9,6 +9,7 @@ import { formatDate } from '../lib/format.js';
 import AlternativesList from '../components/AlternativesList.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
+import NewProjectForm from '../components/NewProjectForm.jsx';
 import RequestDetails from '../components/RequestDetails.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import Spinner from '../components/Spinner.jsx';
@@ -26,6 +27,28 @@ export default function MyRequests() {
     return { projects, requests };
   }, [user.uid]);
   const { data, error, loading, reload } = useAsync(loader);
+  const [formOpen, setFormOpen] = useState(false);
+  const [notice, setNotice] = useState('');
+  const [focusTarget, setFocusTarget] = useState(null);
+  const newProjectButton = useRef(null);
+  const noticeRef = useRef(null);
+
+  // Move focus after the form closes: to the success message, or back to the button on Cancel.
+  useEffect(() => {
+    if (focusTarget === 'notice') noticeRef.current?.focus();
+    if (focusTarget === 'button') newProjectButton.current?.focus();
+  }, [focusTarget, formOpen]);
+
+  const handleCreated = () => {
+    setFormOpen(false);
+    setNotice('Project created');
+    setFocusTarget('notice');
+    reload();
+  };
+  const handleCancel = () => {
+    setFormOpen(false);
+    setFocusTarget('button');
+  };
 
   return (
     <div aria-busy={loading}>
@@ -42,9 +65,42 @@ export default function MyRequests() {
       {data && (
         <>
           <section aria-labelledby="projects-heading" className="mt-6">
-            <h2 id="projects-heading" className="text-xl font-semibold">
-              Projects
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 id="projects-heading" className="text-xl font-semibold">
+                Projects
+              </h2>
+              <button
+                ref={newProjectButton}
+                type="button"
+                aria-expanded={formOpen}
+                aria-controls="new-project-form"
+                onClick={() => {
+                  setNotice('');
+                  setFocusTarget(null);
+                  setFormOpen((open) => !open);
+                }}
+                className="btn-primary"
+              >
+                New project
+              </button>
+            </div>
+            <p
+              ref={noticeRef}
+              tabIndex={-1}
+              aria-live="polite"
+              className="mt-2 font-medium text-green-900"
+            >
+              {notice}
+            </p>
+            {formOpen && (
+              <div className="mb-4">
+                <NewProjectForm
+                  id="new-project-form"
+                  onCreated={handleCreated}
+                  onCancel={handleCancel}
+                />
+              </div>
+            )}
             {data.projects.length === 0 ? (
               <EmptyState title="No projects yet" icon="flask">
                 Describe your project to the assistant and it will help you register it.
