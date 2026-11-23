@@ -7,6 +7,7 @@ import { today } from '../lib/dates.js';
 import ConflictGroup from '../components/ConflictGroup.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
+import PageHeader from '../components/PageHeader.jsx';
 import Spinner from '../components/Spinner.jsx';
 
 /** Conflict groups among pending requests; each can be resolved by the fairness formula. */
@@ -23,17 +24,14 @@ export default function Conflicts() {
 
   return (
     <div aria-busy={loading}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Scheduling conflicts</h1>
-        <button
-          type="button"
-          onClick={reload}
-          disabled={loading}
-          className="rounded-md border border-blue-800 px-3 py-1.5 font-semibold text-blue-900 hover:bg-blue-50 disabled:opacity-60"
-        >
+      <PageHeader
+        title="Scheduling conflicts"
+        description="Requests competing for the same hours, ranked by a fair, explainable formula."
+      >
+        <button type="button" onClick={reload} disabled={loading} className="btn-secondary">
           Refresh
         </button>
-      </div>
+      </PageHeader>
       <p className="mt-2 max-w-prose text-slate-700">
         When pending requests ask for more units than are free, they are ranked by deadline urgency,
         fairness of recent use and project stage. The top requests that fit are booked; the others
@@ -45,8 +43,8 @@ export default function Conflicts() {
       {error && <ErrorMessage error={error} onRetry={reload} />}
       {loading && !data && <Spinner label="Loading conflicts" />}
       {data && data.groups.length === 0 && (
-        <EmptyState title="No conflicts right now">
-          <Link to="/approvals" className="font-semibold text-blue-900 underline">
+        <EmptyState title="No conflicts right now" icon="scale">
+          <Link to="/approvals" className="btn-primary">
             Review the approval queue
           </Link>
         </EmptyState>

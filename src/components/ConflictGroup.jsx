@@ -51,11 +51,7 @@ export default function ConflictGroup({ index, requests, context, onConfirmed })
     });
 
   return (
-    <article
-      aria-labelledby={`${id}-title`}
-      className="rounded-lg border border-slate-200 bg-white p-4"
-      aria-busy={busy}
-    >
+    <article aria-labelledby={`${id}-title`} className="card p-5" aria-busy={busy}>
       <h2 id={`${id}-title`} className="text-lg font-semibold">
         Conflict {index + 1}: {equipmentNames.join(', ')}
       </h2>
@@ -68,12 +64,7 @@ export default function ConflictGroup({ index, requests, context, onConfirmed })
         ))}
       </ul>
       {!resolution && (
-        <button
-          type="button"
-          onClick={handleResolve}
-          disabled={busy}
-          className="mt-4 rounded-md bg-blue-800 px-4 py-2 font-semibold text-white hover:bg-blue-900 disabled:opacity-60"
-        >
+        <button type="button" onClick={handleResolve} disabled={busy} className="btn-primary mt-4">
           Resolve conflict {index + 1}
         </button>
       )}
@@ -87,12 +78,7 @@ export default function ConflictGroup({ index, requests, context, onConfirmed })
         <div className="mt-4 space-y-4">
           <RankingTable resolution={resolution} caption={`Ranking for conflict ${index + 1}`} />
           <ExplanationCard text={templateExplanation(resolution)} />
-          <button
-            type="button"
-            onClick={handleConfirm}
-            disabled={busy}
-            className="rounded-md bg-green-800 px-4 py-2 font-semibold text-white hover:bg-green-900 disabled:opacity-60"
-          >
+          <button type="button" onClick={handleConfirm} disabled={busy} className="btn-success">
             Confirm allocation for conflict {index + 1}
           </button>
         </div>

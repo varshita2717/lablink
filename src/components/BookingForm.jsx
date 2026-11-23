@@ -77,7 +77,7 @@ export default function BookingForm({ item, dates, remainingByDate, onBooked }) 
           onChange={(event) => setUnits(event.target.value)}
           aria-invalid={!unitsValid}
           aria-describedby={unitsValid ? undefined : 'units-error'}
-          className="mt-1 w-full rounded-md border border-slate-400 px-3 py-2"
+          className="field"
         />
         {!unitsValid && (
           <p id="units-error" role="alert" className="mt-1 text-sm text-red-800">
@@ -116,7 +116,7 @@ export default function BookingForm({ item, dates, remainingByDate, onBooked }) 
         type="button"
         onClick={handleBook}
         disabled={!selection || !unitsValid || pending}
-        className="rounded-md bg-blue-800 px-4 py-2 font-semibold text-white hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
+        className="btn-primary"
       >
         {selection ? `Book ${item.name}, ${formatSession(selection)}` : 'Book'}
       </button>

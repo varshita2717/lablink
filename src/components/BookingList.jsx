@@ -15,10 +15,7 @@ export default function BookingList({ title, bookings, cancellingId, onCancel })
       </h2>
       <ul className="mt-3 space-y-3">
         {bookings.map((booking) => (
-          <li
-            key={booking.id}
-            className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white p-4"
-          >
+          <li key={booking.id} className="flex flex-wrap items-center gap-3 card p-5">
             <div className="flex-1">
               <p className="font-semibold">{booking.equipmentName}</p>
               <p className="text-slate-700">
@@ -31,7 +28,7 @@ export default function BookingList({ title, bookings, cancellingId, onCancel })
                 type="button"
                 onClick={() => onCancel(booking)}
                 disabled={cancellingId !== null}
-                className="rounded-md border border-red-800 px-3 py-1 text-sm font-semibold text-red-900 hover:bg-red-50 disabled:opacity-60"
+                className="btn-danger"
               >
                 Cancel booking for {booking.equipmentName} on {formatSession(booking)}
               </button>

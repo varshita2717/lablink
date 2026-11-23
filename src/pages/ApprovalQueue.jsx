@@ -6,6 +6,7 @@ import { today } from '../lib/dates.js';
 import ApprovalItem from '../components/ApprovalItem.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
+import PageHeader from '../components/PageHeader.jsx';
 import Spinner from '../components/Spinner.jsx';
 
 /** Pending requests for faculty and admins, with the conflict lock (Section 11.4). */
@@ -23,24 +24,21 @@ export default function ApprovalQueue() {
 
   return (
     <div aria-busy={loading}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Approval queue</h1>
-        <button
-          type="button"
-          onClick={reload}
-          disabled={loading}
-          className="rounded-md border border-blue-800 px-3 py-1.5 font-semibold text-blue-900 hover:bg-blue-50 disabled:opacity-60"
-        >
+      <PageHeader
+        title="Approval queue"
+        description="Pending access requests from students. Requests in a conflict are resolved on the Conflicts page."
+      >
+        <button type="button" onClick={reload} disabled={loading} className="btn-secondary">
           Refresh
         </button>
-      </div>
+      </PageHeader>
       <p aria-live="polite" className="mt-3 font-medium text-green-900">
         {notice}
       </p>
       {error && <ErrorMessage error={error} onRetry={reload} />}
       {loading && !data && <Spinner label="Loading requests" />}
       {data && data.pending.length === 0 && (
-        <EmptyState title="No pending requests">
+        <EmptyState title="No pending requests" icon="shield">
           New requests from students will appear here.
         </EmptyState>
       )}

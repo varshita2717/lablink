@@ -31,7 +31,7 @@ export default function ChatInput({ onSend, disabled, initialValue = '' }) {
       }}
     >
       <div className="flex-1">
-        <label htmlFor="chat-input" className="text-sm font-medium">
+        <label htmlFor="chat-input" className="text-sm font-medium text-slate-700">
           Message the assistant (Enter to send, Shift+Enter for a new line)
         </label>
         <textarea
@@ -41,14 +41,14 @@ export default function ChatInput({ onSend, disabled, initialValue = '' }) {
           value={text}
           onChange={(event) => setText(event.target.value)}
           onKeyDown={handleKeyDown}
-          className="mt-1 w-full resize-y rounded-md border border-slate-400 px-3 py-2"
+          className="field resize-y"
         />
       </div>
       <button
         type="submit"
         aria-label="Send message"
         disabled={!canSend}
-        className="mb-1 rounded-md bg-blue-800 px-4 py-2 font-semibold text-white hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
+        className="btn-primary mb-0.5"
       >
         Send
       </button>
