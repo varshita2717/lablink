@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import Catalogue from '../Catalogue.jsx';
@@ -54,7 +54,7 @@ describe('Catalogue page', () => {
     expect(screen.getByText('High hazard')).toBeInTheDocument();
     expect(screen.getAllByText('Quiet this week')).toHaveLength(2);
     expect(screen.getByText('2 of 2 items shown')).toBeInTheDocument();
-    expect(document.title).toBe('Catalogue · LabLink');
+    await waitFor(() => expect(document.title).toBe('Catalogue · LabLink'));
     expect(await axe(container)).toHaveNoViolations();
   });
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import EquipmentDetail from '../EquipmentDetail.jsx';
@@ -69,7 +69,7 @@ describe('EquipmentDetail', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Multimeter' }),
     ).toBeInTheDocument();
-    expect(document.title).toBe('Multimeter · LabLink');
+    await waitFor(() => expect(document.title).toBe('Multimeter · LabLink'));
     await user.click(
       screen.getByRole('button', { name: 'Tue 24 Nov, 10:00 to 11:00, 10 of 10 free' }),
     );

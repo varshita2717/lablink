@@ -8,6 +8,9 @@ import { friendlyError } from '../lib/format.js';
 const LINKS = [
   { to: '/catalogue', label: 'Catalogue' },
   { to: '/my-bookings', label: 'My Bookings' },
+  { to: '/my-requests', label: 'My Requests', roles: ['student'] },
+  { to: '/approvals', label: 'Approvals', roles: ['faculty', 'admin'] },
+  { to: '/conflicts', label: 'Conflicts', roles: ['faculty', 'admin'] },
   { to: '/admin', label: 'Admin', roles: ['admin'] },
 ];
 

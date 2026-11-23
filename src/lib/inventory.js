@@ -110,3 +110,25 @@ export function filterEquipment(equipment, filters, availability) {
     return words.every((word) => haystack.includes(word));
   });
 }
+
+/**
+ * PURE: active substitutes for each requested item (same non-null equivalentGroup, other ID).
+ * @param {object[]} equipment Active equipment.
+ * @param {string[]} equipmentIds Items in the plan or request.
+ * @returns {Record<string, { equipmentId: string, name: string }[]>} Only items with substitutes.
+ */
+export function buildSubstitutes(equipment, equipmentIds) {
+  const byId = Object.fromEntries(equipment.map((item) => [item.id, item]));
+  const result = {};
+  for (const id of new Set(equipmentIds)) {
+    const group = byId[id]?.equivalentGroup;
+    if (!group) continue;
+    const others = equipment
+      .filter(
+        (item) => item.equivalentGroup === group && item.id !== id && item.status === 'active',
+      )
+      .map((item) => ({ equipmentId: item.id, name: item.name }));
+    if (others.length) result[id] = others;
+  }
+  return result;
+}
