@@ -13,12 +13,12 @@ export default function EquipmentListCard({ data }) {
   const id = useId();
   return (
     <article aria-labelledby={id} className="card p-5">
-      <h2 id={id} className="text-lg font-semibold text-slate-900">
+      <h2 id={id} className="text-lg font-semibold text-ink">
         Recommended equipment
         {data.matchedExperiment ? ` for "${data.matchedExperiment.title}"` : ''}
       </h2>
       {data.aiMatching === 'unavailable' && (
-        <p className="mt-1 text-sm text-slate-700">
+        <p className="mt-1 text-sm text-muted">
           AI matching is unavailable; these are keyword matches.
         </p>
       )}
@@ -27,11 +27,11 @@ export default function EquipmentListCard({ data }) {
       </p>
       <ul className="mt-3 space-y-3">
         {data.items.map((item) => (
-          <li key={item.equipmentId} className="border-t border-slate-200 pt-2">
+          <li key={item.equipmentId} className="border-t border-line pt-2">
             <p>
               <Link
                 to={`/equipment/${item.equipmentId}`}
-                className="font-semibold text-indigo-700 underline"
+                className="font-semibold text-maroon underline"
               >
                 {item.name}
               </Link>{' '}
@@ -46,7 +46,7 @@ export default function EquipmentListCard({ data }) {
               </span>
             </div>
             {!item.availableTomorrow && item.substitutes.length > 0 && (
-              <p className="mt-1 text-sm font-medium text-indigo-950">
+              <p className="mt-1 text-sm font-medium text-maroon">
                 Substitute available: {item.substitutes.map((s) => s.name).join(', ')}
               </p>
             )}

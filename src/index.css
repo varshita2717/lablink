@@ -1,35 +1,48 @@
 @import 'tailwindcss';
 
-/* System font stack only (the CSP blocks external fonts). */
+/* Campus-lab palette and type. Contrast on cream (#F7EDE5): ink 16:1, maroon 9:1, brick 6.5:1,
+   muted 5.7:1. Rose (#99716F) is about 3.5:1, so it is used for large text and decoration only. */
 @theme {
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    'Noto Sans', sans-serif;
+    'DM Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --color-cream: #f7ede5;
+  --color-surface: #fffaf6;
+  --color-line: #e8d9ce;
+  --color-ink: #141110;
+  --color-muted: #6b5a57;
+  --color-maroon: #5f363e;
+  --color-maroon-dark: #4a2a30;
+  --color-brick: #9c2b22;
+  --color-rose: #99716f;
 }
 
 @layer base {
-  html {
+  html,
+  body {
     -webkit-text-size-adjust: 100%;
+    /* Full-bleed sections use 100vw; clip (unlike hidden) keeps position: sticky working. */
+    overflow-x: clip;
   }
 
   body {
-    @apply bg-slate-50 font-sans text-slate-900 antialiased;
+    @apply bg-cream font-sans font-normal text-ink antialiased;
   }
 
-  /* Visible focus for every interactive element (WCAG 2.4.7); never removed without a replacement. */
+  /* Visible focus for every interactive element (WCAG 2.4.7): a 2px brick ring. */
   :focus-visible {
-    outline: 3px solid var(--color-indigo-600);
+    outline: 2px solid var(--color-brick);
     outline-offset: 2px;
   }
 }
 
 /* Reusable design tokens (Tailwind v4 utilities). */
 @utility card {
-  @apply rounded-xl border border-slate-200 bg-white shadow-sm motion-safe:transition-shadow;
+  @apply rounded-xl border border-line bg-surface shadow-[0_1px_2px_rgb(95_54_62/0.06),0_4px_16px_-4px_rgb(95_54_62/0.08)] motion-safe:transition-shadow;
 }
 
 @utility card-hover {
-  @apply hover:shadow-md;
+  @apply hover:shadow-[0_2px_4px_rgb(95_54_62/0.08),0_12px_28px_-8px_rgb(95_54_62/0.18)];
 }
 
 @utility btn {
@@ -37,27 +50,49 @@
 }
 
 @utility btn-primary {
-  @apply btn bg-indigo-600 text-white hover:bg-indigo-700;
+  @apply btn bg-maroon text-white hover:bg-maroon-dark;
 }
 
 @utility btn-secondary {
-  @apply btn border border-slate-300 bg-white text-slate-800 hover:border-indigo-600 hover:text-indigo-700;
+  @apply btn border border-maroon bg-transparent text-maroon hover:bg-maroon/5;
 }
 
 @utility btn-success {
-  @apply btn bg-teal-700 text-white hover:bg-teal-800;
+  @apply btn bg-maroon text-white hover:bg-maroon-dark;
 }
 
 @utility btn-danger {
-  @apply btn border border-red-700 bg-white text-red-800 hover:bg-red-50;
+  @apply btn border border-red-800 bg-transparent text-red-800 hover:bg-red-50;
 }
 
 @utility field {
-  @apply mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-600;
+  @apply mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink shadow-sm focus:border-maroon;
 }
 
 @utility link {
-  @apply font-semibold text-indigo-700 underline-offset-4 hover:underline;
+  @apply font-semibold text-brick underline-offset-4 hover:underline;
+}
+
+@utility wordmark {
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+@utility kicker {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+}
+
+/* Gradient wordmark with a solid maroon fallback where background-clip:text is unsupported. */
+@utility wordmark-gradient {
+  color: var(--color-maroon);
+  @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    background-image: linear-gradient(180deg, var(--color-maroon) 35%, var(--color-rose) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
 
 /* Respect users who ask for less motion. */

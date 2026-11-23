@@ -4,10 +4,10 @@
  */
 export default function PageHeader({ title, description, children }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-5">
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5">
       <div className="max-w-2xl">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{title}</h1>
-        {description && <p className="mt-1 text-slate-600">{description}</p>}
+        <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">{title}</h1>
+        {description && <p className="mt-1 text-muted">{description}</p>}
       </div>
       {children && <div className="flex flex-wrap gap-2">{children}</div>}
     </div>

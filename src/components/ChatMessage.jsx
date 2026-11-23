@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
 
 const BUBBLES = {
-  user: 'rounded-br-sm bg-indigo-600 text-white',
-  assistant: 'rounded-bl-sm border border-slate-200 bg-white text-slate-900',
+  user: 'rounded-br-sm bg-maroon text-white',
+  assistant: 'rounded-bl-sm border border-line bg-surface text-ink',
 };
 const AVATARS = {
-  user: 'bg-indigo-100 text-indigo-800',
-  assistant: 'bg-teal-100 text-teal-800',
+  user: 'border border-line bg-surface text-maroon',
+  assistant: 'bg-maroon text-white',
 };
 const SPEAKERS = { user: 'You', assistant: 'Assistant' };
 

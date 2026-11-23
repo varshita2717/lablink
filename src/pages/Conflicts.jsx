@@ -32,7 +32,7 @@ export default function Conflicts() {
           Refresh
         </button>
       </PageHeader>
-      <p className="mt-2 max-w-prose text-slate-700">
+      <p className="mt-2 max-w-prose text-muted">
         When pending requests ask for more units than are free, they are ranked by deadline urgency,
         fairness of recent use and project stage. The top requests that fit are booked; the others
         are offered alternative slots.

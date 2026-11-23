@@ -13,19 +13,19 @@ export default function EquipmentCard({ item, utilisation }) {
   return (
     <article aria-labelledby={headingId} className="card card-hover flex h-full flex-col p-5">
       <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cream text-maroon">
           <Icon name={CATEGORY_ICONS[item.category]} className="h-5 w-5" />
         </span>
         <div>
-          <h3 id={headingId} className="font-semibold text-slate-900">
+          <h3 id={headingId} className="font-semibold text-ink">
             {item.name}
           </h3>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted">
             {item.category} · {item.labName} · {item.department}
           </p>
         </div>
       </div>
-      <p className="mt-3 flex-1 text-sm text-slate-700">{item.description}</p>
+      <p className="mt-3 flex-1 text-sm text-muted">{item.description}</p>
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <AccessBadge accessLevel={item.accessLevel} />
         <HazardBadge hazardLevel={item.hazardLevel} />
@@ -36,8 +36,8 @@ export default function EquipmentCard({ item, utilisation }) {
           />
         )}
       </div>
-      <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4">
-        <span className="text-sm text-slate-600">
+      <div className="mt-4 flex items-center justify-between border-t border-line pt-4">
+        <span className="text-sm text-muted">
           {item.quantity} {item.quantity === 1 ? 'unit' : 'units'}
         </span>
         <Link to={`/equipment/${item.id}`} className="btn-secondary min-h-9 px-3 py-1.5">

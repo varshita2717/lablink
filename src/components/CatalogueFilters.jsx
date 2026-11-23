@@ -13,7 +13,7 @@ export default function CatalogueFilters({ values, onChange, departments, dates,
   const handle = (event) => onChange(event.target.name, event.target.value);
   const select = (name, label, options) => (
     <div>
-      <label htmlFor={`filter-${name}`} className="text-sm font-medium text-slate-700">
+      <label htmlFor={`filter-${name}`} className="text-sm font-medium text-muted">
         {label}
       </label>
       <select
@@ -41,7 +41,7 @@ export default function CatalogueFilters({ values, onChange, departments, dates,
       className="card grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-5"
     >
       <div className="sm:col-span-2 lg:col-span-1">
-        <label htmlFor="filter-query" className="text-sm font-medium text-slate-700">
+        <label htmlFor="filter-query" className="text-sm font-medium text-muted">
           Search
         </label>
         <SearchAutocomplete

@@ -55,14 +55,61 @@ describe('Welcome sign-in', () => {
     vi.restoreAllMocks();
   });
 
-  it('redirects signed-in users to the home page', () => {
+  it('shows "Go to app" instead of the sign-in buttons to signed-in users', () => {
+    renderRoutes(<Route path="/welcome" element={<Welcome />} />, { path: '/welcome' });
+    expect(screen.getByRole('link', { name: 'Go to app' })).toHaveAttribute('href', '/');
+    expect(screen.queryByRole('button', { name: 'Explore as guest' })).not.toBeInTheDocument();
+  });
+
+  it('sends signed-in users back to the protected page they came from', () => {
     renderRoutes(
       <>
         <Route path="/welcome" element={<Welcome />} />
-        <Route path="/" element={<p>Home page</p>} />
+        <Route path="/catalogue" element={<p>Catalogue page</p>} />
       </>,
-      { path: '/welcome' },
+      { path: { pathname: '/welcome', state: { from: '/catalogue' } } },
     );
-    expect(screen.getByText('Home page')).toBeInTheDocument();
+    expect(screen.getByText('Catalogue page')).toBeInTheDocument();
+  });
+});
+
+describe('Welcome opening', () => {
+  it('"Step inside" targets #enter, moves focus there, and the page has no axe violations', async () => {
+    const user = userEvent.setup();
+    const { container } = renderRoutes(<Route path="/" element={<Welcome />} />, {
+      auth: signedOut(),
+    });
+    expect(screen.getByRole('heading', { level: 1, name: 'LabLink' })).toBeInTheDocument();
+    const stepInside = screen.getByRole('link', { name: /Step inside/ });
+    expect(stepInside).toHaveAttribute('href', '#enter');
+    await user.click(stepInside);
+    const entry = container.querySelector('#enter');
+    expect(entry).toHaveFocus();
+    expect(entry).toHaveAttribute('tabindex', '-1');
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('keeps the sign-in buttons in the tab order', async () => {
+    const user = userEvent.setup();
+    renderRoutes(<Route path="/" element={<Welcome />} />, { auth: signedOut() });
+    await user.tab(); // Step inside
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Explore as guest' })).toHaveFocus();
+  });
+
+  it('renders static sections without transforms under reduced motion', () => {
+    const original = window.matchMedia;
+    window.matchMedia = vi.fn(() => ({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
+    const { container } = renderRoutes(<Route path="/" element={<Welcome />} />, {
+      auth: signedOut(),
+    });
+    expect(screen.getByRole('heading', { level: 1 })).not.toHaveAttribute('style');
+    expect(container.querySelector('#enter')).not.toHaveAttribute('style');
+    expect(screen.getByRole('region', { name: 'Welcome' })).not.toHaveClass('sticky');
+    window.matchMedia = original;
   });
 });

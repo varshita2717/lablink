@@ -8,15 +8,12 @@ import { useId } from 'react';
 export default function ExplanationCard({ text }) {
   const headingId = useId();
   return (
-    <article
-      aria-labelledby={headingId}
-      className="rounded-lg border border-indigo-200 bg-indigo-50 p-4"
-    >
-      <h3 id={headingId} className="font-semibold text-indigo-950">
+    <article aria-labelledby={headingId} className="rounded-lg border border-line bg-cream p-4">
+      <h3 id={headingId} className="font-semibold text-maroon">
         Why this allocation
       </h3>
-      <p className="mt-2 text-slate-900">{text}</p>
-      <p className="mt-2 text-xs text-slate-700">
+      <p className="mt-2 text-ink">{text}</p>
+      <p className="mt-2 text-xs text-muted">
         Summary generated from the scoring formula; the ranking comes from the formula.
       </p>
     </article>

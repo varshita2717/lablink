@@ -10,7 +10,7 @@ function highlight(text, query) {
   return (
     <>
       {text.slice(0, at)}
-      <mark className="rounded bg-amber-100 px-0.5 text-slate-900">
+      <mark className="rounded bg-amber-100 px-0.5 text-ink">
         {text.slice(at, at + query.length)}
       </mark>
       {text.slice(at + query.length)}
@@ -101,7 +101,7 @@ export default function SearchAutocomplete({ id, value, onChange, equipment }) {
         role="listbox"
         aria-label="Equipment suggestions"
         hidden={!expanded}
-        className="absolute z-30 mt-1 max-h-80 w-full min-w-64 overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+        className="absolute z-30 mt-1 max-h-80 w-full min-w-64 overflow-auto rounded-lg border border-line bg-surface py-1 shadow-lg"
       >
         {suggestions.map((item, index) => (
           <div
@@ -114,17 +114,17 @@ export default function SearchAutocomplete({ id, value, onChange, equipment }) {
             onClick={() => choose(item)}
             onKeyDown={(event) => event.key === 'Enter' && choose(item)}
             onMouseEnter={() => setActive(index)}
-            className={`cursor-pointer px-3 py-2 text-sm ${index === active ? 'bg-indigo-50' : ''}`}
+            className={`cursor-pointer px-3 py-2 text-sm ${index === active ? 'bg-cream' : ''}`}
           >
-            <span className="block font-medium text-slate-900">{highlight(item.name, query)}</span>
-            <span className="block text-xs text-slate-600">
+            <span className="block font-medium text-ink">{highlight(item.name, query)}</span>
+            <span className="block text-xs text-muted">
               {item.category} · {ACCESS_LABELS[item.accessLevel]}
             </span>
           </div>
         ))}
       </div>
       {showNoMatch && (
-        <p className="absolute z-30 mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-lg">
+        <p className="absolute z-30 mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-muted shadow-lg">
           No equipment matches
         </p>
       )}

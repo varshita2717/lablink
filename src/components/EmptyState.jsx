@@ -7,11 +7,11 @@ import Icon from './Icon.jsx';
 export default function EmptyState({ title, icon = 'inbox', children }) {
   return (
     <div className="card flex flex-col items-center border-dashed px-6 py-10 text-center shadow-none">
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream text-maroon">
         <Icon name={icon} className="h-6 w-6" />
       </span>
-      <p className="mt-3 font-semibold text-slate-900">{title}</p>
-      {children && <div className="mt-3 text-slate-600">{children}</div>}
+      <p className="mt-3 font-semibold text-ink">{title}</p>
+      {children && <div className="mt-3 text-muted">{children}</div>}
     </div>
   );
 }

@@ -85,7 +85,7 @@ export default function BookingForm({ item, dates, remainingByDate, onBooked }) 
           </p>
         )}
       </div>
-      <p className="text-slate-700">
+      <p className="text-muted">
         Select up to {MAX_HOURS_PER_DAY} consecutive hours on one day. Select a neighbouring hour to
         extend the booking, or an end hour to shorten it.
       </p>

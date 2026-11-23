@@ -11,7 +11,7 @@ export default function Layout() {
   return (
     <div className="flex min-h-screen flex-col">
       <SkipLink />
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <Logo />
           <Navbar />
@@ -22,8 +22,8 @@ export default function Layout() {
           <Outlet />
         </Suspense>
       </main>
-      <footer className="border-t border-slate-200 bg-white">
-        <p className="mx-auto max-w-6xl px-4 py-5 text-sm text-slate-600">
+      <footer className="border-t border-line bg-surface">
+        <p className="mx-auto max-w-6xl px-4 py-5 text-sm text-muted">
           {APP_NAME}: {APP_TAGLINE}
         </p>
       </footer>

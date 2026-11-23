@@ -15,7 +15,7 @@ export default function PlanCard({ card, onConfirm, onCancel }) {
   const { data } = card;
   return (
     <article aria-labelledby={id} className="card p-5">
-      <h2 id={id} className="text-lg font-semibold text-slate-900">
+      <h2 id={id} className="text-lg font-semibold text-ink">
         Plan for {data.project.title}
       </h2>
       <p
@@ -38,7 +38,7 @@ export default function PlanCard({ card, onConfirm, onCancel }) {
         ))}
       </ul>
       {data.substitutions.length > 0 && (
-        <p className="mt-2 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-sm text-indigo-950">
+        <p className="mt-2 rounded-lg border border-line bg-cream px-3 py-1.5 text-sm text-maroon">
           <span className="font-semibold">Substitution: </span>
           {data.substitutions
             .map((s) => `${s.replacement.name} replaces ${s.originalName}`)

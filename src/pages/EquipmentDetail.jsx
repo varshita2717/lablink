@@ -56,11 +56,11 @@ export default function EquipmentDetail() {
   return (
     <div className="space-y-6" aria-busy={loading}>
       <div>
-        <Link to="/catalogue" className="text-sm font-semibold text-indigo-700 underline">
+        <Link to="/catalogue" className="text-sm font-semibold text-maroon underline">
           Back to the catalogue
         </Link>
         <h1 className="mt-2 text-2xl font-bold">{item.name}</h1>
-        <p className="text-slate-700">
+        <p className="text-muted">
           {item.category} · {item.labName} · {item.department} · {item.quantity}{' '}
           {item.quantity === 1 ? 'unit' : 'units'}
         </p>
@@ -68,7 +68,7 @@ export default function EquipmentDetail() {
           <AccessBadge accessLevel={item.accessLevel} />
           <HazardBadge hazardLevel={item.hazardLevel} />
         </div>
-        <p className="mt-3 max-w-prose text-slate-800">{item.description}</p>
+        <p className="mt-3 max-w-prose text-ink">{item.description}</p>
       </div>
 
       {item.hazardLevel !== 'none' && item.safetyNote && (
@@ -101,7 +101,7 @@ export default function EquipmentDetail() {
           />
         ) : (
           <div className="space-y-4">
-            <p className="text-slate-700">
+            <p className="text-muted">
               This equipment needs faculty approval. Ask the assistant to plan your sessions and
               prepare a request for your faculty guide.
             </p>

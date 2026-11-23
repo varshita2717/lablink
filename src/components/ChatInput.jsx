@@ -31,7 +31,7 @@ export default function ChatInput({ onSend, disabled, initialValue = '' }) {
       }}
     >
       <div className="flex-1">
-        <label htmlFor="chat-input" className="text-sm font-medium text-slate-700">
+        <label htmlFor="chat-input" className="text-sm font-medium text-muted">
           Message the assistant (Enter to send, Shift+Enter for a new line)
         </label>
         <textarea
