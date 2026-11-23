@@ -196,7 +196,7 @@ describe('EquipmentDetail', () => {
       renderDetail('eq-heating-mantle');
       await pickTwoHours(user);
       await user.selectOptions(screen.getByLabelText('Project (required)'), 'new');
-      await user.type(screen.getByLabelText('Project title (required)'), 'Acid Study');
+      await user.type(screen.getByLabelText(/Project title/), 'Acid Study');
       await user.type(screen.getByLabelText('Deadline (required)'), '2026-12-05');
       await user.selectOptions(screen.getByLabelText('Faculty guide (required)'), 'seed-kavita');
       await user.type(screen.getByLabelText(/Why you need it/), 'Heating study.');

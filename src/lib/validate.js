@@ -131,8 +131,14 @@ export function validateId(value, byId, field = 'id') {
   return value;
 }
 
-/** A future deadline within MAX_PROJECT_DEADLINE_DAYS. */
-function validateDeadline(value, today) {
+/**
+ * Validates a project deadline: a real date after today and within MAX_PROJECT_DEADLINE_DAYS.
+ * @param {unknown} value
+ * @param {string} today
+ * @returns {string}
+ * @throws {AppError} INVALID_INPUT.
+ */
+export function validateDeadline(value, today) {
   const deadline = validateDate(value, 'deadline');
   const offset = daysBetween(today, deadline);
   if (offset < 1 || offset > MAX_PROJECT_DEADLINE_DAYS) {
