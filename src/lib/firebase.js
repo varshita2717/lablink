@@ -5,6 +5,7 @@ import { initializeApp } from 'firebase/app';
 import { ReCaptchaV3Provider, initializeAppCheck } from 'firebase/app-check';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { resolveAppCheckConfig } from './config.js';
 
 const env = import.meta.env;
 
@@ -18,22 +19,23 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 
+const appCheckConfig = resolveAppCheckConfig(env);
+
 /**
- * App Check (reCAPTCHA v3) is optional: it is initialised only when VITE_RECAPTCHA_SITE_KEY is set.
- * Without it the app still runs; AI Logic calls fail if App Check is enforced for the project,
- * and the chat then shows its "assistant unavailable" fallback.
+ * App Check (reCAPTCHA v3) is optional. initializeAppCheck runs only when VITE_RECAPTCHA_SITE_KEY
+ * is a non-empty string (see resolveAppCheckConfig). When it does not run, the App Check
+ * component is never created, so Firebase AI Logic sends requests without an App Check header.
  * @returns {import('firebase/app-check').AppCheck | null}
  */
 function initOptionalAppCheck() {
-  const siteKey = env.VITE_RECAPTCHA_SITE_KEY;
-  if (!siteKey) return null;
-  // Local development only: lets App Check accept a registered debug token.
-  if (env.DEV && env.VITE_APPCHECK_DEBUG_TOKEN) {
-    self.FIREBASE_APPCHECK_DEBUG_TOKEN = env.VITE_APPCHECK_DEBUG_TOKEN;
+  if (!appCheckConfig.enabled) return null;
+  if (appCheckConfig.debugToken) {
+    // Local development only (resolveAppCheckConfig never returns a token outside DEV).
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = appCheckConfig.debugToken;
   }
   try {
     return initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider(siteKey),
+      provider: new ReCaptchaV3Provider(appCheckConfig.siteKey),
       isTokenAutoRefreshEnabled: true,
     });
   } catch (error) {
