@@ -1,6 +1,15 @@
-// Allocation explanation (SPEC Section 14). templateExplanation is PURE;
-// the AI version (explainAllocation) is added in segment F6.
-import { STAGE_LABELS, W_FAIRNESS, W_STAGE, W_URGENCY } from '../config.js';
+// Allocation explanation (SPEC Section 14). templateExplanation is PURE and shown first;
+// explainAllocation asks the model for a short summary and falls back to the template.
+import {
+  AI_EXPLAIN_MAX_OUTPUT_TOKENS,
+  MAX_EXPLANATION_CHARS,
+  STAGE_LABELS,
+  W_FAIRNESS,
+  W_STAGE,
+  W_URGENCY,
+} from '../config.js';
+import { generateText } from './agent.js';
+import { buildExplainPrompt } from './prompts.js';
 import { formatDate, formatSession, roundScore } from '../format.js';
 
 const percent = (weight) => `${Math.round(weight * 100)}%`;
@@ -50,4 +59,32 @@ export function templateExplanation(resolution) {
       `${percent(W_FAIRNESS)} and project stage ${percent(W_STAGE)}; the ranking comes from this formula.`,
   );
   return parts.join(' ');
+}
+
+/**
+ * AI-written explanation of a resolution (3-4 sentences for faculty). Retries busy-model errors
+ * like the chat does. Falls back to templateExplanation if the call fails, the text is empty or too
+ * long, or it does not name the allocated student (a basic guard against invented facts).
+ * @param {{ ranking: object[] }} resolution Output of resolveGroup.
+ * @param {{ generate?: (prompt: string, options: object) => Promise<string>,
+ *           onRetry?: (attempt: number, delayMs: number) => void }} [options]
+ * @returns {Promise<{ text: string, source: 'ai' | 'template' }>}
+ */
+export async function explainAllocation(resolution, { generate = generateText, onRetry } = {}) {
+  const fallback = { text: templateExplanation(resolution), source: 'template' };
+  if (!resolution?.ranking?.length) return fallback;
+  try {
+    const raw = await generate(buildExplainPrompt(resolution), {
+      maxOutputTokens: AI_EXPLAIN_MAX_OUTPUT_TOKENS,
+      onRetry,
+    });
+    const text = String(raw ?? '').trim();
+    const winner = resolution.ranking.find((entry) => entry.isWinner);
+    const namesWinner = !winner || text.includes(winner.studentName.split(' ')[0]);
+    if (!text || text.length > MAX_EXPLANATION_CHARS || !namesWinner) return fallback;
+    return { text, source: 'ai' };
+  } catch (error) {
+    console.error('AI explanation unavailable; using the template', error);
+    return fallback;
+  }
 }

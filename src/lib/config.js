@@ -131,6 +131,8 @@ export const AI_TEMPERATURE = 0.2;
 export const AI_MAX_OUTPUT_TOKENS = 1024;
 export const AI_RECOMMEND_MAX_OUTPUT_TOKENS = 1024;
 export const AI_EXPLAIN_MAX_OUTPUT_TOKENS = 400;
+/** AI explanations longer than this are discarded in favour of the template. */
+export const MAX_EXPLANATION_CHARS = 900;
 export const MAX_MESSAGES_PER_MINUTE = 10;
 export const RATE_LIMIT_WINDOW_MS = 60_000;
 export const MAX_TOOL_ROUNDS = 6;
