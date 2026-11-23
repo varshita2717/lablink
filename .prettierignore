@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+package-lock.json
+SPEC_v3.md
+CLAUDE.md
+firestore.rules

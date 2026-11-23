@@ -1,0 +1,187 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function userPath(id) { return /databases/$(database)/documents/users/$(id); }
+    function myRole() { return get(userPath(me())).data.role; }
+    function isAdmin() { return signedIn() && myRole() == 'admin'; }
+    function isStaff() { return signedIn() && myRole() in ['faculty', 'admin']; }
+    function demoMode() {
+      return get(/databases/$(database)/documents/config/app).data.demoMode == true;
+    }
+    function isDate(s) { return s is string && s.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); }
+    function maxStr(s, n) { return s is string && s.size() <= n; }
+    function reqStr(s, n) { return s is string && s.size() > 0 && s.size() <= n; }
+    function stampedNow() { return request.resource.data.createdAt == request.time; }
+    function changedOnly(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+    function validCategory(c) {
+      return c in ['Measurement', 'Dev Kit', 'Workstation', 'Fabrication', 'Computing', 'Glassware', 'Heating'];
+    }
+    function validStage(s) { return s in ['idea', 'prototype', 'final']; }
+
+    // ---------- config (console-managed) ----------
+    match /config/{docId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    // ---------- users ----------
+    match /users/{userId} {
+      allow read: if signedIn();
+      allow create: if isAdmin() || (
+        signedIn() && userId == me()
+        && request.resource.data.keys().hasOnly(['name', 'role', 'department', 'createdAt'])
+        && reqStr(request.resource.data.name, 80)
+        && maxStr(request.resource.data.department, 40)
+        && request.resource.data.role == 'student'
+        && stampedNow());
+      // Demo mode only: a user may switch their OWN role. demoMode is false in production.
+      allow update: if signedIn() && userId == me() && demoMode()
+        && changedOnly(['role'])
+        && request.resource.data.role in ['student', 'faculty', 'admin'];
+      allow delete: if false;
+    }
+
+    // ---------- reference data ----------
+    match /labs/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+    match /experiments/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // ---------- equipment ----------
+    function validEquipment(d) {
+      return d.keys().hasOnly(['name', 'category', 'description', 'tags', 'labId', 'labName',
+                               'department', 'quantity', 'accessLevel', 'hazardLevel', 'safetyNote',
+                               'equivalentGroup', 'status', 'proposedByUid', 'proposedByName',
+                               'reason', 'createdAt', 'updatedAt'])
+        && reqStr(d.name, 100) && validCategory(d.category) && maxStr(d.description, 500)
+        && d.tags is list && d.tags.size() <= 20
+        && d.quantity is int && d.quantity >= 1 && d.quantity <= 100
+        && d.accessLevel in ['open', 'approval']
+        && d.hazardLevel in ['none', 'moderate', 'high']
+        && (d.hazardLevel != 'high' || d.accessLevel == 'approval')   // hazard invariant
+        && d.status in ['active', 'disabled', 'proposed'];
+    }
+    function validProposal(d) {
+      return d.keys().hasOnly(['name', 'description', 'category', 'reason', 'status',
+                               'accessLevel', 'proposedByUid', 'proposedByName', 'createdAt'])
+        && reqStr(d.name, 100) && maxStr(d.description, 500) && maxStr(d.reason, 500)
+        && validCategory(d.category)
+        && d.status == 'proposed' && d.accessLevel == 'approval'
+        && d.proposedByUid == me();
+    }
+    match /equipment/{id} {
+      allow read: if signedIn();
+      allow create: if (isAdmin() && validEquipment(request.resource.data))
+                    || (signedIn() && validProposal(request.resource.data) && stampedNow());
+      allow update: if isAdmin() && validEquipment(request.resource.data);
+      allow delete: if false;   // disable instead
+    }
+
+    // ---------- slots (per equipment per day) ----------
+    // Hours mirror SLOT_START_HOUR..SLOT_END_HOUR-1 in config.js.
+    // Residual risk (documented): clients maintain counters; rules bound every value to
+    // 0..quantity. A server-side writer would remove this in production.
+    function okHour(hrs, k, q) {
+      return !(k in hrs) || (hrs[k] is int && hrs[k] >= 0 && hrs[k] <= q);
+    }
+    function validSlot(slotId, d) {
+      let q = get(/databases/$(database)/documents/equipment/$(d.equipmentId)).data.quantity;
+      return d.keys().hasOnly(['equipmentId', 'date', 'hours', 'updatedAt'])
+        && d.equipmentId is string && isDate(d.date)
+        && slotId == d.equipmentId + '_' + d.date
+        && d.hours is map
+        && d.hours.keys().hasOnly(['9', '10', '11', '12', '13', '14', '15', '16'])
+        && okHour(d.hours, '9', q) && okHour(d.hours, '10', q) && okHour(d.hours, '11', q)
+        && okHour(d.hours, '12', q) && okHour(d.hours, '13', q) && okHour(d.hours, '14', q)
+        && okHour(d.hours, '15', q) && okHour(d.hours, '16', q);
+    }
+    match /slots/{slotId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && validSlot(slotId, request.resource.data);
+      allow delete: if false;
+    }
+
+    // ---------- bookings ----------
+    function validBooking(d) {
+      return d.keys().hasOnly(['equipmentId', 'equipmentName', 'date', 'startHour', 'endHour',
+                               'qty', 'userUid', 'userName', 'requestId', 'projectId',
+                               'status', 'createdAt'])
+        && d.equipmentId is string && maxStr(d.equipmentName, 100) && isDate(d.date)
+        && d.startHour is int && d.endHour is int
+        && d.startHour >= 9 && d.endHour <= 17 && d.startHour < d.endHour
+        && d.qty is int && d.qty >= 1 && d.qty <= 100
+        && d.status == 'confirmed';
+    }
+    match /bookings/{id} {
+      allow read: if signedIn() && (resource.data.userUid == me() || isStaff());
+      allow create: if signedIn() && stampedNow() && validBooking(request.resource.data)
+        && (request.resource.data.userUid == me() || isStaff());
+      allow update: if signedIn() && resource.data.userUid == me()
+        && resource.data.status == 'confirmed'
+        && request.resource.data.status == 'cancelled'
+        && changedOnly(['status', 'cancelledAt']);
+      allow delete: if false;
+    }
+
+    // ---------- projects ----------
+    function validProject(d) {
+      return d.keys().hasOnly(['title', 'description', 'ownerUid', 'ownerName', 'facultyGuideUid',
+                               'facultyGuideName', 'deadline', 'stage', 'createdAt'])
+        && reqStr(d.title, 120) && maxStr(d.description, 1000) && maxStr(d.ownerName, 80)
+        && isDate(d.deadline) && validStage(d.stage)
+        && get(userPath(d.facultyGuideUid)).data.role == 'faculty';
+    }
+    match /projects/{id} {
+      allow read: if signedIn() && (resource.data.ownerUid == me() || isStaff());
+      allow create: if signedIn() && stampedNow() && validProject(request.resource.data)
+        && (request.resource.data.ownerUid == me() || isAdmin());
+      allow update, delete: if false;
+    }
+
+    // ---------- requests ----------
+    function validRequest(d) {
+      return d.keys().hasOnly(['projectId', 'projectTitle', 'studentUid', 'studentName',
+                               'facultyUid', 'items', 'sessions', 'justification', 'deadline',
+                               'stage', 'hazardNote', 'status', 'score', 'scoreBreakdown',
+                               'alternatives', 'facultyComment', 'createdAt'])
+        && d.items is list && d.items.size() >= 1 && d.items.size() <= 8
+        && d.sessions is list && d.sessions.size() >= 1 && d.sessions.size() <= 10
+        && maxStr(d.justification, 1000) && maxStr(d.hazardNote, 1000)
+        && isDate(d.deadline) && validStage(d.stage)
+        && d.status == 'pending' && d.score == null;
+    }
+    match /requests/{id} {
+      allow read: if signedIn() && (resource.data.studentUid == me() || isStaff());
+      allow create: if signedIn() && stampedNow() && validRequest(request.resource.data)
+        && (isAdmin() || (
+             request.resource.data.studentUid == me()
+             && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.ownerUid == me()));
+      allow update: if isStaff()
+        && changedOnly(['status', 'score', 'scoreBreakdown', 'alternatives', 'facultyComment',
+                        'decidedByUid', 'decidedAt'])
+        && request.resource.data.status in ['approved', 'rejected', 'changes_requested', 'conflict_lost'];
+      allow delete: if false;
+    }
+
+    // ---------- audit log (append-only) ----------
+    match /auditLog/{id} {
+      allow read: if isStaff();
+      allow create: if isStaff() && stampedNow()
+        && request.resource.data.actorUid == me()
+        && request.resource.data.keys().hasOnly(['action', 'actorUid', 'actorName', 'targetType',
+                                                 'targetId', 'details', 'formulaVersion', 'createdAt'])
+        && reqStr(request.resource.data.action, 40);
+      allow update, delete: if false;
+    }
+  }
+}
