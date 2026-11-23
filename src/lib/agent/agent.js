@@ -3,7 +3,10 @@ import { app, appCheck } from '../firebase.js';
 import {
   AI_MAX_OUTPUT_TOKENS,
   AI_MODEL_NAME,
+  AI_MAX_RETRIES,
   AI_RECOMMEND_MAX_OUTPUT_TOKENS,
+  AI_RETRY_DELAYS_MS,
+  AI_RETRYABLE_STATUSES,
   AI_TEMPERATURE,
   MAX_TOOL_ROUNDS,
 } from '../config.js';
@@ -20,6 +23,52 @@ export const TOOL_ROUNDS_EXCEEDED_TEXT =
   'Sorry, I could not finish that. Please try a shorter or more specific request.';
 
 let aiPromise = null;
+
+/**
+ * HTTP status of a failed AI call: Firebase AI Logic puts it in `customErrorData.status`; the
+ * message ("[503 Service Unavailable]") is used as a fallback.
+ * @param {unknown} error
+ * @returns {number | null}
+ */
+export function aiErrorStatus(error) {
+  const status = error?.customErrorData?.status ?? error?.status;
+  if (Number.isInteger(status)) return status;
+  const match = /\[(\d{3})\b/.exec(String(error?.message ?? ''));
+  return match ? Number(match[1]) : null;
+}
+
+/**
+ * PURE: true only for retryable AI failures (429, 500, 503). Validation and auth errors (other
+ * 4xx), errors without a status and app errors are never retried.
+ * @param {unknown} error
+ * @returns {boolean}
+ */
+export function isRetryableAIError(error) {
+  return AI_RETRYABLE_STATUSES.includes(aiErrorStatus(error));
+}
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Runs an AI call, retrying retryable failures up to AI_MAX_RETRIES times with backoff.
+ * @param {() => Promise<any>} call
+ * @param {{ onRetry?: (attempt: number, delayMs: number) => void,
+ *           sleep?: (ms: number) => Promise<void> }} [options]
+ * @returns {Promise<any>} The call's result.
+ * @throws The last error once retries are exhausted, or any non-retryable error immediately.
+ */
+export async function withRetry(call, { onRetry, sleep = wait } = {}) {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await call();
+    } catch (error) {
+      if (attempt >= AI_MAX_RETRIES || !isRetryableAIError(error)) throw error;
+      const delay = AI_RETRY_DELAYS_MS[Math.min(attempt, AI_RETRY_DELAYS_MS.length - 1)];
+      onRetry?.(attempt + 1, delay);
+      await sleep(delay);
+    }
+  }
+}
 
 /** Loads firebase/ai once and creates the AI Logic client (Gemini Developer API backend). */
 function loadAI() {
@@ -41,7 +90,7 @@ function loadAI() {
 }
 
 /** The separate JSON-mode call for recommend_equipment (SPEC 13.3). */
-async function generateRecommendationJson(description, equipment, experiments) {
+async function generateRecommendationJson(description, equipment, experiments, retry = {}) {
   const { mod, ai } = await loadAI();
   const model = mod.getGenerativeModel(ai, {
     model: AI_MODEL_NAME,
@@ -52,9 +101,8 @@ async function generateRecommendationJson(description, equipment, experiments) {
       responseSchema: RECOMMEND_SCHEMA,
     },
   });
-  const result = await model.generateContent(
-    buildRecommendPrompt(description, equipment, experiments),
-  );
+  const prompt = buildRecommendPrompt(description, equipment, experiments);
+  const result = await withRetry(() => model.generateContent(prompt), retry);
   return result.response.text();
 }
 
@@ -96,11 +144,23 @@ export async function runToolLoop({ chat, message, execute, maxRounds = MAX_TOOL
 /**
  * Creates a chat session for one user and role. Nothing is loaded until the first message.
  * @param {{ user: { uid: string, name: string, role: string }, today: string,
- *           plans: Map<string, object>, onCard: (card: object) => void, deps?: object }} options
+ *           plans: Map<string, object>, onCard: (card: object) => void,
+ *           onRetry?: (attempt: number, delayMs: number) => void, deps?: object }} options
+ *   `onRetry` is called before each automatic retry of a busy or overloaded model.
  * @returns {{ send: (text: string) => Promise<string> }}
  */
-export function createAgentSession({ user, today, plans, onCard, deps = DEFAULT_DEPS }) {
-  const runner = createToolRunner({ user, today, plans, deps });
+export function createAgentSession({ user, today, plans, onCard, onRetry, deps = DEFAULT_DEPS }) {
+  const retry = { onRetry, sleep: deps.sleep };
+  const runner = createToolRunner({
+    user,
+    today,
+    plans,
+    deps: {
+      ...deps,
+      generateRecommendationJson: (text, equipment, experiments) =>
+        deps.generateRecommendationJson(text, equipment, experiments, retry),
+    },
+  });
   let chatPromise = null;
 
   const startChat = async () => {
@@ -125,8 +185,12 @@ export function createAgentSession({ user, today, plans, onCard, deps = DEFAULT_
       try {
         chatPromise ??= startChat();
         const chat = await chatPromise;
+        // Transient 429/500/503 failures are retried with backoff before giving up.
+        const retryingChat = {
+          sendMessage: (request) => withRetry(() => chat.sendMessage(request), retry),
+        };
         const { text: reply } = await runToolLoop({
-          chat,
+          chat: retryingChat,
           message,
           execute: async (name, args) => {
             const { response, card } = await runner.run(name, args);

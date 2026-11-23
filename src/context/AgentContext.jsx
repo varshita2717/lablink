@@ -28,6 +28,7 @@ export default function AgentProvider({ children }) {
     key: sessionKey,
     messages: [],
     pending: false,
+    retrying: false,
     error: null,
   });
   const sessionRef = useRef({ key: null, session: null });
@@ -35,7 +36,7 @@ export default function AgentProvider({ children }) {
 
   // Reset during render when the user or role changes (React's "adjust state on prop change").
   if (state.key !== sessionKey) {
-    setState({ key: sessionKey, messages: [], pending: false, error: null });
+    setState({ key: sessionKey, messages: [], pending: false, retrying: false, error: null });
   }
 
   const append = useCallback((message) => {
@@ -51,6 +52,7 @@ export default function AgentProvider({ children }) {
           today: today(),
           plans: new Map(),
           onCard: (card) => append({ role: 'card', card: { ...card, status: 'open' } }),
+          onRetry: () => setState((s) => ({ ...s, retrying: true })),
         }),
       };
     }
@@ -65,15 +67,16 @@ export default function AgentProvider({ children }) {
         return;
       }
       append({ role: 'user', text, focus });
-      setState((s) => ({ ...s, pending: true, error: null }));
+      setState((s) => ({ ...s, pending: true, retrying: false, error: null }));
       try {
         const reply = await getSession().send(text);
         append({ role: 'assistant', text: reply });
-        setState((s) => ({ ...s, pending: false }));
+        setState((s) => ({ ...s, pending: false, retrying: false }));
       } catch (error) {
         setState((s) => ({
           ...s,
           pending: false,
+          retrying: false,
           error: { code: error.code ?? ERROR_CODES.AI_UNAVAILABLE },
         }));
       }
@@ -130,6 +133,7 @@ export default function AgentProvider({ children }) {
     () => ({
       messages: state.messages,
       pending: state.pending,
+      retrying: state.retrying,
       error: state.error,
       send,
       confirmCard,

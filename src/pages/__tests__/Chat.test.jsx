@@ -73,6 +73,15 @@ describe('Chat page', () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
+  it('announces "The assistant is busy, retrying…" while retrying', () => {
+    renderChat({
+      pending: true,
+      retrying: true,
+      messages: [{ id: '1', role: 'user', text: 'hi' }],
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('The assistant is busy, retrying…');
+  });
+
   it('shows a friendly fallback with a Catalogue link when AI is unavailable', () => {
     renderChat({ error: { code: 'AI_UNAVAILABLE' } });
     expect(screen.getByRole('alert')).toHaveTextContent('The assistant is unavailable right now');

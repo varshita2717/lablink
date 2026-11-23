@@ -14,6 +14,8 @@ import ProjectDraftCard from '../components/ProjectDraftCard.jsx';
 import PromptChips from '../components/PromptChips.jsx';
 import Spinner from '../components/Spinner.jsx';
 
+export const RETRYING_TEXT = 'The assistant is busy, retrying…';
+
 /** Renders a card message by type. */
 function renderCard(message, confirmCard, cancelCard) {
   const props = {
@@ -40,7 +42,7 @@ export default function Chat() {
   useDocumentTitle('Assistant');
   const location = useLocation();
   const { user } = useAuth();
-  const { messages, pending, error, send, confirmCard, cancelCard } = useAgent();
+  const { messages, pending, retrying, error, send, confirmCard, cancelCard } = useAgent();
   const aiDown = error?.code === ERROR_CODES.AI_UNAVAILABLE;
   const userInitials = initialsOf(user?.name);
 
@@ -81,7 +83,16 @@ export default function Chat() {
             />
           ),
         )}
-        {pending && <Spinner label="Assistant is typing" />}
+        {pending && (
+          <div className="flex items-center gap-2">
+            <Spinner label={retrying ? RETRYING_TEXT : 'Assistant is typing'} />
+            {retrying && (
+              <p aria-hidden="true" className="text-sm text-muted">
+                {RETRYING_TEXT}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {error && (
