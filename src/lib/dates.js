@@ -1,7 +1,7 @@
 // PURE: no Firebase, no React.
 // Dates are `YYYY-MM-DD` strings in campus local time; arithmetic is done in UTC
 // on the calendar date only, so results never depend on the browser's time zone.
-import { CAMPUS_TIME_ZONE, MS_PER_DAY, WORKING_WEEKDAYS } from './config.js';
+import { CAMPUS_TIME_ZONE, MAX_DAYS_AHEAD, MS_PER_DAY, WORKING_WEEKDAYS } from './config.js';
 import { AppError, ERROR_CODES } from './errors.js';
 
 const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -111,4 +111,14 @@ export function workingDaysInRange(from, to) {
     if (isWorkingDay(date)) result.push(date);
   }
   return result;
+}
+
+/**
+ * The bookable horizon: working days from tomorrow up to MAX_DAYS_AHEAD days ahead.
+ * @param {string} fromDate Today, `YYYY-MM-DD`.
+ * @returns {string[]} Working days in order.
+ * @throws {AppError} INVALID_INPUT for a bad date.
+ */
+export function horizonDates(fromDate) {
+  return workingDaysInRange(addDays(fromDate, 1), addDays(fromDate, MAX_DAYS_AHEAD));
 }

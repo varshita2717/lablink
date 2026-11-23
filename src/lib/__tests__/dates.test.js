@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   addDays,
   daysBetween,
+  horizonDates,
   isWorkingDay,
   nextWorkingDay,
   today,
@@ -106,4 +107,14 @@ describe('invalid input', () => {
       );
     },
   );
+});
+
+describe('horizonDates', () => {
+  it('lists working days from tomorrow to today + 14', () => {
+    const dates = horizonDates('2026-11-23');
+    expect(dates[0]).toBe('2026-11-24');
+    expect(dates.at(-1)).toBe('2026-12-07');
+    expect(dates).toHaveLength(10);
+    expect(dates).not.toContain('2026-11-28');
+  });
 });

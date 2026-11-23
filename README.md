@@ -40,3 +40,16 @@ protection comes from Firestore rules and App Check. `.env` is git-ignored: neve
 4. `npm run deploy` → `https://<project-id>.web.app`
 
 Security headers (CSP, HSTS, etc.), caching and the SPA fallback are configured in `firebase.json`.
+
+## Seed the demo data
+
+1. In the Firebase console, enable the **Google** and **Anonymous** sign-in providers and create
+   the Firestore doc `config/app` = `{ demoMode: true }`.
+2. Open the app, choose **Explore as guest**, switch the **Role (demo)** selector to **Admin**.
+3. Go to **Admin** → **Seed demo data**.
+
+Seeding stops if any equipment exists. Dates are relative to the seed day, so on demo day clear the
+collections in the Firebase console and seed again.
+
+> Demo mode lets any user switch role. `config/app.demoMode` can only be changed in the console;
+> in production it is `false` and roles are assigned by an admin.
