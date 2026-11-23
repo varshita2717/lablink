@@ -13,7 +13,7 @@ export default function ProjectDraftCard({ card, onConfirm, onCancel }) {
   const { data } = card;
   return (
     <article aria-labelledby={id} className="card p-5">
-      <h2 id={id} className="text-lg font-semibold text-slate-900">
+      <h2 id={id} className="text-lg font-semibold text-ink">
         New project: {data.title}
       </h2>
       <dl className="mt-2 grid gap-x-4 gap-y-1 text-sm sm:grid-cols-[max-content_1fr]">

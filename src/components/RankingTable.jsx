@@ -20,12 +20,10 @@ const HEADINGS = [
  */
 export default function RankingTable({ resolution, caption }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200">
+    <div className="overflow-x-auto rounded-xl border border-line">
       <table className="min-w-full border-collapse text-left text-sm">
-        <caption className="bg-slate-50 px-3 py-2 text-left font-semibold text-slate-900">
-          {caption}
-        </caption>
-        <thead className="bg-slate-50 text-xs tracking-wide text-slate-600 uppercase">
+        <caption className="bg-cream px-3 py-2 text-left font-semibold text-ink">{caption}</caption>
+        <thead className="bg-cream text-xs tracking-wide text-muted uppercase">
           <tr>
             {HEADINGS.map((heading) => (
               <th key={heading} scope="col" className="px-3 py-2 font-semibold">
@@ -34,16 +32,16 @@ export default function RankingTable({ resolution, caption }) {
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200 bg-white">
+        <tbody className="divide-y divide-line bg-surface">
           {resolution.ranking.map((entry) => (
             <tr key={entry.requestId} className="align-top">
               <td className="px-3 py-3">
                 <RankMedal rank={entry.rank} />
               </td>
-              <th scope="row" className="px-3 py-3 font-semibold text-slate-900">
+              <th scope="row" className="px-3 py-3 font-semibold text-ink">
                 {entry.studentName}
               </th>
-              <td className="px-3 py-3 text-slate-700">{entry.projectTitle}</td>
+              <td className="px-3 py-3 text-muted">{entry.projectTitle}</td>
               <td className="px-3 py-3">
                 <ScoreBar value={entry.score.urgency} />
               </td>
@@ -60,14 +58,14 @@ export default function RankingTable({ resolution, caption }) {
                 <span
                   className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-semibold ${
                     entry.isWinner
-                      ? 'border-teal-300 bg-teal-50 text-teal-800'
+                      ? 'border-line bg-cream text-maroon'
                       : 'border-orange-300 bg-orange-50 text-orange-900'
                   }`}
                 >
                   {entry.isWinner ? 'Allocated' : 'Not allocated'}
                 </span>
               </td>
-              <td className="px-3 py-3 text-slate-700">
+              <td className="px-3 py-3 text-muted">
                 {entry.isWinner ? '—' : <AlternativesList alternatives={entry.alternatives} />}
               </td>
             </tr>

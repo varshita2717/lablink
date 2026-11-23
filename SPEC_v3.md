@@ -285,7 +285,7 @@ MCP server (the in-app agent uses ordinary function calling; MCP would only matt
 
 ### 5.2 Dependencies (complete list; add nothing else)
 
-- **Runtime:** `react`, `react-dom`, `react-router-dom`, `firebase`
+- **Runtime:** `react`, `react-dom`, `react-router-dom`, `firebase`, `@fontsource-variable/dm-sans` (self-hosted DM Sans, latin variable subset only: the CSP's `font-src 'self'` blocks Google Fonts, so the font ships from the app's own origin)
 - **Dev:** `vite`, `@vitejs/plugin-react`, `tailwindcss`, `@tailwindcss/vite`, `vitest`, `@vitest/coverage-v8`, `jsdom`, `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`, `jest-axe`, `eslint`, `@eslint/js`, `globals`, `eslint-plugin-react`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y`, `prettier`, `firebase-tools`, `@firebase/rules-unit-testing`
 
 ### 5.3 Scripts (`package.json`)

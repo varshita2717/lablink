@@ -77,7 +77,7 @@ export default function Catalogue() {
       {location.state?.notice && (
         <p
           role="status"
-          className="mb-4 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-indigo-900"
+          className="mb-4 rounded-lg border border-line bg-cream px-4 py-2 text-maroon"
         >
           {location.state.notice}
         </p>
@@ -104,7 +104,7 @@ export default function Catalogue() {
         )}
         {data && (
           <>
-            <p aria-live="polite" className="mb-3 text-sm text-slate-700">
+            <p aria-live="polite" className="mb-3 text-sm text-muted">
               {results.length} of {data.equipment.length} items shown
             </p>
             {results.length === 0 ? (

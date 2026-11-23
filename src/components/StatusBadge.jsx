@@ -7,7 +7,7 @@ const TONES = {
   confirmed: 'bg-green-100 text-green-900 border-green-300',
   rejected: 'bg-red-100 text-red-900 border-red-300',
   conflict_lost: 'bg-orange-100 text-orange-900 border-orange-300',
-  changes_requested: 'bg-indigo-100 text-indigo-700 border-indigo-300',
+  changes_requested: 'bg-blue-100 text-blue-900 border-blue-300',
   cancelled: 'bg-slate-100 text-slate-800 border-slate-300',
   proposed: 'bg-purple-100 text-purple-900 border-purple-300',
   quiet: 'bg-teal-100 text-teal-900 border-teal-300',

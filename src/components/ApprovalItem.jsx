@@ -60,9 +60,9 @@ export default function ApprovalItem({ request, inConflict, onDecided }) {
         <h2 id={`${id}-title`} className="text-lg font-semibold">
           {request.projectTitle}
         </h2>
-        <span className="text-slate-700">by {request.studentName}</span>
+        <span className="text-muted">by {request.studentName}</span>
         {request.facultyUid === user.uid && (
-          <span className="rounded-full border border-indigo-300 bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">
+          <span className="rounded-full border border-line bg-cream px-2 py-0.5 text-xs font-semibold text-maroon">
             Your student
           </span>
         )}

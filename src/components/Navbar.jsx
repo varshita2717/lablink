@@ -18,8 +18,8 @@ const LINKS = [
 const linkClass = ({ isActive }) =>
   `inline-flex min-h-10 items-center border-b-2 px-1 text-sm font-medium motion-safe:transition-colors ${
     isActive
-      ? 'border-indigo-600 text-indigo-700'
-      : 'border-transparent text-slate-700 hover:border-slate-300 hover:text-slate-900'
+      ? 'border-maroon text-maroon'
+      : 'border-transparent text-muted hover:border-line hover:text-ink'
   }`;
 
 /** Main navigation: links by role, demo role switcher (demo mode only), user name and sign out. */
@@ -56,7 +56,7 @@ export default function Navbar() {
       <div className="ml-auto flex flex-wrap items-center gap-3">
         {demoMode && (
           <div className="flex items-center gap-2">
-            <label htmlFor="demo-role" className="text-sm font-medium text-slate-700">
+            <label htmlFor="demo-role" className="text-sm font-medium text-muted">
               Role (demo)
             </label>
             <select
@@ -65,7 +65,7 @@ export default function Navbar() {
               onChange={handleRoleChange}
               disabled={switching}
               aria-describedby={roleError ? 'role-error' : undefined}
-              className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-800"
+              className="rounded-full border border-line bg-cream px-3 py-1.5 text-sm font-semibold text-maroon"
             >
               {ROLES.map((role) => (
                 <option key={role} value={role}>
@@ -80,8 +80,8 @@ export default function Navbar() {
             )}
           </div>
         )}
-        <span className="text-sm text-slate-700">
-          {user.name} <span className="text-slate-600">({ROLE_LABELS[user.role]})</span>
+        <span className="text-sm text-muted">
+          {user.name} <span className="text-muted">({ROLE_LABELS[user.role]})</span>
         </span>
         <button type="button" onClick={signOut} className="btn-secondary min-h-9 px-3 py-1.5">
           Sign out

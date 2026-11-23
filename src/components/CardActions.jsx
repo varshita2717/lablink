@@ -14,14 +14,14 @@ export default function CardActions({
 }) {
   if (status === 'confirmed')
     return (
-      <p className="mt-4 inline-flex rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-800">
+      <p className="mt-4 inline-flex rounded-full bg-cream px-3 py-1 text-sm font-semibold text-maroon">
         Confirmed.
       </p>
     );
-  if (status === 'cancelled') return <p className="mt-3 text-slate-700">Cancelled.</p>;
+  if (status === 'cancelled') return <p className="mt-3 text-muted">Cancelled.</p>;
   const submitting = status === 'submitting';
   return (
-    <div className="mt-4 border-t border-slate-100 pt-4">
+    <div className="mt-4 border-t border-line pt-4">
       {error && (
         <p role="alert" className="mb-2 text-sm text-red-800">
           {error}

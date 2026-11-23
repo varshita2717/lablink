@@ -28,7 +28,7 @@ export default class ErrorBoundary extends Component {
       <main id="main" className="mx-auto max-w-xl px-4 py-16 text-center">
         <div role="alert">
           <h1 className="text-2xl font-bold">Something went wrong</h1>
-          <p className="mt-3 text-slate-700">
+          <p className="mt-3 text-muted">
             The page hit an unexpected problem. Your data is safe. Please reload to try again.
           </p>
         </div>

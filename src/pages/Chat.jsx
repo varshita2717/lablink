@@ -51,10 +51,7 @@ export default function Chat() {
         description="Describe what you want to build. The assistant finds equipment, plans slots and prepares the booking; nothing happens until you press Confirm."
       />
       {location.state?.notice && (
-        <p
-          role="status"
-          className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-indigo-900"
-        >
+        <p role="status" className="rounded-lg border border-line bg-cream px-4 py-2 text-maroon">
           {location.state.notice}
         </p>
       )}
@@ -64,7 +61,7 @@ export default function Chat() {
         aria-live="polite"
         aria-label="Conversation"
         aria-busy={pending}
-        className="flex min-h-64 flex-col gap-4 rounded-xl border border-slate-200 bg-slate-100/70 p-4"
+        className="flex min-h-64 flex-col gap-4 rounded-xl border border-line bg-cream/70 p-4"
       >
         {messages.length === 0 && (
           <EmptyState title="No messages yet" icon="chat">
@@ -101,7 +98,7 @@ export default function Chat() {
         </div>
       )}
 
-      <div className="sticky bottom-0 z-10 space-y-3 rounded-xl border border-slate-200 bg-white/95 p-4 shadow-md backdrop-blur">
+      <div className="sticky bottom-0 z-10 space-y-3 rounded-xl border border-line bg-surface/95 p-4 shadow-md backdrop-blur">
         {messages.length === 0 && (
           <PromptChips onPick={(prompt) => send(prompt)} disabled={pending} />
         )}

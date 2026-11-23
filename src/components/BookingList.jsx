@@ -18,7 +18,7 @@ export default function BookingList({ title, bookings, cancellingId, onCancel })
           <li key={booking.id} className="flex flex-wrap items-center gap-3 card p-5">
             <div className="flex-1">
               <p className="font-semibold">{booking.equipmentName}</p>
-              <p className="text-slate-700">
+              <p className="text-muted">
                 {formatSession(booking)} · {booking.qty} {booking.qty === 1 ? 'unit' : 'units'}
               </p>
             </div>

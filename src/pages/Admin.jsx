@@ -31,12 +31,12 @@ export default function Admin() {
       <h1 className="text-2xl font-bold">Admin</h1>
       <section
         aria-labelledby="seed-heading"
-        className="mt-6 rounded-lg border border-slate-200 bg-white p-5"
+        className="mt-6 rounded-lg border border-line bg-surface p-5"
       >
         <h2 id="seed-heading" className="text-lg font-semibold">
           Demo data
         </h2>
-        <p className="mt-2 text-slate-700">
+        <p className="mt-2 text-muted">
           Loads the demo labs, equipment, experiments, users and the seeded oscilloscope conflict,
           with dates relative to today. It stops if any equipment already exists.
         </p>

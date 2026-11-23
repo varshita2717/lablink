@@ -27,12 +27,12 @@ export default function SlotPicker({
   onCellClick,
 }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+    <div className="overflow-x-auto rounded-lg border border-line bg-surface">
       <table className="min-w-full border-collapse text-sm">
-        <caption className="px-3 py-2 text-left font-semibold text-slate-900">{caption}</caption>
+        <caption className="px-3 py-2 text-left font-semibold text-ink">{caption}</caption>
         <thead>
           <tr>
-            <th scope="col" className="sticky left-0 bg-white px-2 py-1 text-left">
+            <th scope="col" className="sticky left-0 bg-surface px-2 py-1 text-left">
               Time
             </th>
             {dates.map((date) => (
@@ -47,7 +47,7 @@ export default function SlotPicker({
             <tr key={hour}>
               <th
                 scope="row"
-                className="sticky left-0 bg-white px-2 py-1 text-left whitespace-nowrap"
+                className="sticky left-0 bg-surface px-2 py-1 text-left whitespace-nowrap"
               >
                 {formatHour(hour)}
               </th>
@@ -65,9 +65,9 @@ export default function SlotPicker({
                       onClick={() => onCellClick?.(date, hour)}
                       className={`min-h-8 w-full min-w-16 rounded border px-1 py-1 text-xs font-medium ${
                         selected
-                          ? 'border-indigo-700 bg-indigo-600 text-white'
+                          ? 'border-maroon bg-maroon text-white'
                           : unavailable
-                            ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-700'
+                            ? 'cursor-not-allowed border-line bg-cream text-muted'
                             : 'border-green-300 bg-green-50 text-green-900 hover:bg-green-100'
                       }`}
                     >

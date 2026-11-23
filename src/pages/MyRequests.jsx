@@ -59,7 +59,7 @@ export default function MyRequests() {
                 {data.projects.map((project) => (
                   <li key={project.id} className="card p-5">
                     <p className="font-semibold">{project.title}</p>
-                    <p className="text-sm text-slate-700">
+                    <p className="text-sm text-muted">
                       Deadline {formatDate(project.deadline)} · {STAGE_LABELS[project.stage]} ·
                       Guide {project.facultyGuideName}
                     </p>
