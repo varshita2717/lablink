@@ -3,9 +3,10 @@ import { TOOL_ROUNDS_EXCEEDED_TEXT, createAgentSession, runToolLoop } from '../a
 import { ERROR_CODES } from '../errors.js';
 
 vi.mock('../firebase.js', () => ({ db: {}, app: {}, appCheck: null }));
+const getAI = vi.fn(() => ({}));
 vi.mock('firebase/ai', () => ({
   GoogleAIBackend: class {},
-  getAI: () => ({}),
+  getAI: (...args) => getAI(...args),
   getGenerativeModel: () => {
     throw new Error('App Check token rejected');
   },

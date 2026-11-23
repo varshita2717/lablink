@@ -140,3 +140,29 @@ export const DEFAULT_PLAN_WEEKS = 2;
 /** Keyword search (recommendation fallback): points per word found in each field. */
 export const SEARCH_WEIGHTS = { name: 3, tags: 2, text: 1 };
 export const MIN_SEARCH_WORD_LENGTH = 3;
+
+// ---------- App Check (optional) ----------
+const UNSET_ENV_VALUES = ['', 'undefined', 'null'];
+const envString = (value) => {
+  const text = typeof value === 'string' ? value.trim() : '';
+  return UNSET_ENV_VALUES.includes(text.toLowerCase()) ? '' : text;
+};
+
+/**
+ * PURE: decides whether App Check is used, from build-time env values. App Check is enabled only
+ * when VITE_RECAPTCHA_SITE_KEY is a non-empty string; otherwise initializeAppCheck must not run,
+ * no debug token is set and AI Logic calls are sent without App Check tokens.
+ * The debug token is used only with App Check enabled, in development, when non-empty.
+ * @param {Record<string, unknown>} env Usually `import.meta.env`.
+ * @returns {{ enabled: boolean, siteKey: string, debugToken: string | null }}
+ */
+export function resolveAppCheckConfig(env) {
+  const siteKey = envString(env?.VITE_RECAPTCHA_SITE_KEY);
+  const enabled = siteKey.length > 0;
+  const debugToken = envString(env?.VITE_APPCHECK_DEBUG_TOKEN);
+  return {
+    enabled,
+    siteKey,
+    debugToken: enabled && env?.DEV === true && debugToken ? debugToken : null,
+  };
+}

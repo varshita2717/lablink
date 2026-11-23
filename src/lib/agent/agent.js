@@ -28,7 +28,8 @@ function loadAI() {
       mod,
       ai: mod.getAI(app, {
         backend: new mod.GoogleAIBackend(),
-        // Limited-use App Check tokens (replay protection) when App Check is configured.
+        // Limited-use App Check tokens only when App Check was initialised. Without it the
+        // App Check component does not exist and requests carry no App Check header.
         useLimitedUseAppCheckTokens: Boolean(appCheck),
       }),
     }))

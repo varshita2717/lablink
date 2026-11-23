@@ -46,6 +46,13 @@ Security headers (CSP, HSTS, etc.), caching and the SPA fallback are configured 
 - **App Check is optional.** It starts only when `VITE_RECAPTCHA_SITE_KEY` (a reCAPTCHA v3 site
   key) is set; without it the app runs normally and logs nothing. If initialisation fails, the
   error is logged once and the app continues without App Check.
+- **Troubleshooting "401 Firebase App Check token is invalid":** the deployed build initialised App
+  Check, which happens only when `VITE_RECAPTCHA_SITE_KEY` was non-empty at build time. If App Check
+  is not set up for the project, leave `VITE_RECAPTCHA_SITE_KEY=` empty (blank, `undefined` and
+  `null` count as empty), then rebuild and redeploy (`npm run deploy`): Vite inlines the value at
+  build time, so editing `.env` without rebuilding changes nothing. Without App Check, AI Logic
+  requests carry no App Check header; if the console still enforces App Check for AI Logic, turn
+  enforcement off there (App Check → APIs → Firebase AI Logic) or set App Check up properly.
 - **The assistant needs App Check in practice.** Firebase AI Logic can enforce App Check (and may
   do so by default), in which case AI calls without a valid token are rejected. The chat then shows
   "The assistant is unavailable right now" with a link to the Catalogue, which works without AI.
