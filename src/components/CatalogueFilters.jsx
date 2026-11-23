@@ -1,14 +1,15 @@
 import { ACCESS_LABELS, ACCESS_LEVELS, CATEGORIES } from '../lib/config.js';
 import { formatDate } from '../lib/format.js';
+import SearchAutocomplete from './SearchAutocomplete.jsx';
 
 const fieldClass = 'field';
 
 /**
  * Catalogue filter form. Every control is labelled; "Any" (empty value) matches everything.
  * @param {{ values: object, onChange: (name: string, value: string) => void,
- *           departments: string[], dates: string[] }} props
+ *           departments: string[], dates: string[], equipment: object[] }} props
  */
-export default function CatalogueFilters({ values, onChange, departments, dates }) {
+export default function CatalogueFilters({ values, onChange, departments, dates, equipment }) {
   const handle = (event) => onChange(event.target.name, event.target.value);
   const select = (name, label, options) => (
     <div>
@@ -43,14 +44,11 @@ export default function CatalogueFilters({ values, onChange, departments, dates 
         <label htmlFor="filter-query" className="text-sm font-medium text-slate-700">
           Search
         </label>
-        <input
+        <SearchAutocomplete
           id="filter-query"
-          name="query"
-          type="search"
           value={values.query}
-          onChange={handle}
-          placeholder="e.g. oscilloscope, heating"
-          className={fieldClass}
+          onChange={(value) => onChange('query', value)}
+          equipment={equipment}
         />
       </div>
       {select(

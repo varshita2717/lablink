@@ -88,6 +88,7 @@ export default function Catalogue() {
           onChange={handleFilterChange}
           departments={departments}
           dates={data?.dates ?? []}
+          equipment={data?.equipment ?? []}
         />
       </div>
       <section aria-labelledby="results-heading" aria-busy={loading} className="mt-6">
