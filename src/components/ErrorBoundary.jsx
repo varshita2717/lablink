@@ -32,11 +32,7 @@ export default class ErrorBoundary extends Component {
             The page hit an unexpected problem. Your data is safe. Please reload to try again.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={this.handleReload}
-          className="mt-6 rounded-md bg-blue-800 px-4 py-2 font-semibold text-white hover:bg-blue-900"
-        >
+        <button type="button" onClick={this.handleReload} className="btn-primary mt-6">
           Reload page
         </button>
       </main>

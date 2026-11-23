@@ -11,6 +11,8 @@ import CatalogueFilters from '../components/CatalogueFilters.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import EquipmentCard from '../components/EquipmentCard.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
+import PageHeader from '../components/PageHeader.jsx';
+import SkeletonGrid from '../components/SkeletonGrid.jsx';
 import Spinner from '../components/Spinner.jsx';
 
 const EMPTY_FILTERS = { query: '', department: '', category: '', accessLevel: '', freeOn: '' };
@@ -64,26 +66,23 @@ export default function Catalogue() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Equipment catalogue</h1>
-        <button
-          type="button"
-          onClick={handleRefresh}
-          disabled={loading}
-          className="rounded-md border border-blue-800 px-3 py-1.5 font-semibold text-blue-900 hover:bg-blue-50 disabled:opacity-60"
-        >
+      <PageHeader
+        title="Equipment catalogue"
+        description="Equipment, dev kits and workstations across departments, with live availability for the next two weeks."
+      >
+        <button type="button" onClick={handleRefresh} disabled={loading} className="btn-secondary">
           Refresh
         </button>
-      </div>
+      </PageHeader>
       {location.state?.notice && (
         <p
           role="status"
-          className="mt-3 rounded-md border border-blue-300 bg-blue-50 px-4 py-2 text-blue-900"
+          className="mb-4 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-indigo-900"
         >
           {location.state.notice}
         </p>
       )}
-      <div className="mt-4">
+      <div>
         <CatalogueFilters
           values={filters}
           onChange={handleFilterChange}
@@ -96,17 +95,33 @@ export default function Catalogue() {
           Results
         </h2>
         {error && <ErrorMessage error={error} onRetry={reload} />}
-        {loading && !data && <Spinner label="Loading equipment" />}
+        {loading && !data && (
+          <>
+            <Spinner label="Loading equipment" />
+            <SkeletonGrid />
+          </>
+        )}
         {data && (
           <>
             <p aria-live="polite" className="mb-3 text-sm text-slate-700">
               {results.length} of {data.equipment.length} items shown
             </p>
             {results.length === 0 ? (
-              <EmptyState title="No equipment matches these filters">
+              <EmptyState title="No equipment matches these filters" icon="search">
                 {data.equipment.length === 0
                   ? 'No equipment has been added yet. An admin can seed the demo data from the Admin page.'
                   : 'Try clearing a filter or searching for a different word.'}
+                {data.equipment.length > 0 && (
+                  <div className="mt-3">
+                    <button
+                      type="button"
+                      onClick={() => setFilters(EMPTY_FILTERS)}
+                      className="btn-secondary"
+                    >
+                      Clear filters
+                    </button>
+                  </div>
+                )}
               </EmptyState>
             ) : (
               <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

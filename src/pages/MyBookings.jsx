@@ -8,6 +8,7 @@ import { daysBetween, today } from '../lib/dates.js';
 import { formatSession } from '../lib/format.js';
 import EmptyState from '../components/EmptyState.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
+import PageHeader from '../components/PageHeader.jsx';
 import Spinner from '../components/Spinner.jsx';
 import BookingList from '../components/BookingList.jsx';
 
@@ -43,17 +44,14 @@ export default function MyBookings() {
 
   return (
     <div aria-busy={loading}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">My bookings</h1>
-        <button
-          type="button"
-          onClick={reload}
-          disabled={loading}
-          className="rounded-md border border-blue-800 px-3 py-1.5 font-semibold text-blue-900 hover:bg-blue-50 disabled:opacity-60"
-        >
+      <PageHeader
+        title="My bookings"
+        description="Your upcoming and past equipment bookings. Future bookings can be cancelled."
+      >
+        <button type="button" onClick={reload} disabled={loading} className="btn-secondary">
           Refresh
         </button>
-      </div>
+      </PageHeader>
       <p aria-live="polite" className="mt-3 text-green-900">
         {notice}
       </p>
@@ -62,8 +60,8 @@ export default function MyBookings() {
       {loading && !data && <Spinner label="Loading bookings" />}
       {data && data.length === 0 && (
         <div className="mt-6">
-          <EmptyState title="You have no bookings yet">
-            <Link to="/catalogue" className="font-semibold text-blue-900 underline">
+          <EmptyState title="You have no bookings yet" icon="calendar">
+            <Link to="/catalogue" className="btn-primary">
               Find equipment in the catalogue
             </Link>
           </EmptyState>

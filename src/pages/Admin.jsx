@@ -40,12 +40,7 @@ export default function Admin() {
           Loads the demo labs, equipment, experiments, users and the seeded oscilloscope conflict,
           with dates relative to today. It stops if any equipment already exists.
         </p>
-        <button
-          type="button"
-          onClick={handleSeed}
-          disabled={pending}
-          className="mt-4 rounded-md bg-blue-800 px-4 py-2 font-semibold text-white hover:bg-blue-900 disabled:opacity-60"
-        >
+        <button type="button" onClick={handleSeed} disabled={pending} className="btn-primary mt-4">
           Seed demo data
         </button>
         <div aria-live="polite" className="mt-4">

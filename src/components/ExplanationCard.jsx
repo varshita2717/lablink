@@ -10,9 +10,9 @@ export default function ExplanationCard({ text }) {
   return (
     <article
       aria-labelledby={headingId}
-      className="rounded-lg border border-blue-200 bg-blue-50 p-4"
+      className="rounded-lg border border-indigo-200 bg-indigo-50 p-4"
     >
-      <h3 id={headingId} className="font-semibold text-blue-950">
+      <h3 id={headingId} className="font-semibold text-indigo-950">
         Why this allocation
       </h3>
       <p className="mt-2 text-slate-900">{text}</p>

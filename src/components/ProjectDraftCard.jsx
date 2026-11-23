@@ -12,8 +12,8 @@ export default function ProjectDraftCard({ card, onConfirm, onCancel }) {
   const id = useId();
   const { data } = card;
   return (
-    <article aria-labelledby={id} className="rounded-lg border border-slate-300 bg-white p-4">
-      <h2 id={id} className="font-semibold">
+    <article aria-labelledby={id} className="card p-5">
+      <h2 id={id} className="text-lg font-semibold text-slate-900">
         New project: {data.title}
       </h2>
       <dl className="mt-2 grid gap-x-4 gap-y-1 text-sm sm:grid-cols-[max-content_1fr]">

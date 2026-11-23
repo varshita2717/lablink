@@ -37,8 +37,8 @@ export default function EquipmentDetail() {
     return (
       <>
         <h1 className="mb-4 text-2xl font-bold">Equipment not found</h1>
-        <EmptyState title="This equipment does not exist or is not available.">
-          <Link to="/catalogue" className="font-semibold text-blue-900 underline">
+        <EmptyState title="This equipment does not exist or is not available." icon="search">
+          <Link to="/catalogue" className="btn-primary">
             Back to the catalogue
           </Link>
         </EmptyState>
@@ -56,7 +56,7 @@ export default function EquipmentDetail() {
   return (
     <div className="space-y-6" aria-busy={loading}>
       <div>
-        <Link to="/catalogue" className="text-sm font-semibold text-blue-900 underline">
+        <Link to="/catalogue" className="text-sm font-semibold text-indigo-700 underline">
           Back to the catalogue
         </Link>
         <h1 className="mt-2 text-2xl font-bold">{item.name}</h1>
@@ -88,12 +88,7 @@ export default function EquipmentDetail() {
           <h2 id="availability-heading" className="text-xl font-semibold">
             {item.accessLevel === 'open' ? 'Book a time' : 'Availability'}
           </h2>
-          <button
-            type="button"
-            onClick={reload}
-            disabled={loading}
-            className="rounded-md border border-blue-800 px-3 py-1.5 font-semibold text-blue-900 hover:bg-blue-50 disabled:opacity-60"
-          >
+          <button type="button" onClick={reload} disabled={loading} className="btn-secondary">
             Refresh
           </button>
         </div>
@@ -110,11 +105,7 @@ export default function EquipmentDetail() {
               This equipment needs faculty approval. Ask the assistant to plan your sessions and
               prepare a request for your faculty guide.
             </p>
-            <button
-              type="button"
-              onClick={requestViaChat}
-              className="rounded-md bg-blue-800 px-4 py-2 font-semibold text-white hover:bg-blue-900"
-            >
+            <button type="button" onClick={requestViaChat} className="btn-primary">
               Request this via chat
             </button>
             <SlotPicker

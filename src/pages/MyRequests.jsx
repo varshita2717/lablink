@@ -10,6 +10,7 @@ import AlternativesList from '../components/AlternativesList.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import RequestDetails from '../components/RequestDetails.jsx';
+import PageHeader from '../components/PageHeader.jsx';
 import Spinner from '../components/Spinner.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 
@@ -28,17 +29,14 @@ export default function MyRequests() {
 
   return (
     <div aria-busy={loading}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">My projects and requests</h1>
-        <button
-          type="button"
-          onClick={reload}
-          disabled={loading}
-          className="rounded-md border border-blue-800 px-3 py-1.5 font-semibold text-blue-900 hover:bg-blue-50 disabled:opacity-60"
-        >
+      <PageHeader
+        title="My projects and requests"
+        description="Your projects and the access requests sent to faculty, with their status."
+      >
+        <button type="button" onClick={reload} disabled={loading} className="btn-secondary">
           Refresh
         </button>
-      </div>
+      </PageHeader>
       {error && <ErrorMessage error={error} onRetry={reload} />}
       {loading && !data && <Spinner label="Loading requests" />}
       {data && (
@@ -48,13 +46,18 @@ export default function MyRequests() {
               Projects
             </h2>
             {data.projects.length === 0 ? (
-              <EmptyState title="No projects yet">
+              <EmptyState title="No projects yet" icon="flask">
                 Describe your project to the assistant and it will help you register it.
+                <div className="mt-3">
+                  <Link to="/" className="btn-primary">
+                    Open the assistant
+                  </Link>
+                </div>
               </EmptyState>
             ) : (
               <ul className="mt-3 grid gap-3 sm:grid-cols-2">
                 {data.projects.map((project) => (
-                  <li key={project.id} className="rounded-lg border border-slate-200 bg-white p-4">
+                  <li key={project.id} className="card p-5">
                     <p className="font-semibold">{project.title}</p>
                     <p className="text-sm text-slate-700">
                       Deadline {formatDate(project.deadline)} · {STAGE_LABELS[project.stage]} ·
@@ -70,16 +73,18 @@ export default function MyRequests() {
               Requests
             </h2>
             {data.requests.length === 0 ? (
-              <EmptyState title="No requests yet">
-                Equipment that needs approval is requested through the assistant.{' '}
-                <Link to="/catalogue" className="font-semibold text-blue-900 underline">
-                  Browse the catalogue
-                </Link>
+              <EmptyState title="No requests yet" icon="inbox">
+                Equipment that needs approval is requested through the assistant.
+                <div className="mt-3">
+                  <Link to="/catalogue" className="btn-primary">
+                    Browse the catalogue
+                  </Link>
+                </div>
               </EmptyState>
             ) : (
               <ul className="mt-3 space-y-3">
                 {data.requests.map((request) => (
-                  <li key={request.id} className="rounded-lg border border-slate-200 bg-white p-4">
+                  <li key={request.id} className="card p-5">
                     <div className="mb-3 flex flex-wrap items-center gap-2">
                       <h3 className="font-semibold">{request.projectTitle}</h3>
                       <StatusBadge status={request.status} />
@@ -92,7 +97,7 @@ export default function MyRequests() {
                       </p>
                     )}
                     {request.status === 'conflict_lost' && (
-                      <div className="mt-3 rounded-md border border-orange-300 bg-orange-50 p-3 text-sm text-orange-950">
+                      <div className="mt-3 rounded-lg border border-orange-300 bg-orange-50 p-3 text-sm text-orange-950">
                         <p className="font-semibold">
                           Another request was allocated these hours. Suggested alternatives:
                         </p>

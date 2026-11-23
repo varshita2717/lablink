@@ -18,7 +18,7 @@ export default function PromptChips({ onPick, disabled, prompts = DEMO_PROMPTS }
             type="button"
             onClick={() => onPick(prompt)}
             disabled={disabled}
-            className="rounded-full border border-blue-800 bg-white px-3 py-1.5 text-left text-sm text-blue-900 hover:bg-blue-50 disabled:opacity-60"
+            className="rounded-full border border-indigo-200 bg-white px-4 py-2 text-left text-sm font-medium text-indigo-800 shadow-sm hover:border-indigo-600 hover:bg-indigo-50 disabled:opacity-60 motion-safe:transition-colors"
           >
             {prompt}
           </button>

@@ -30,7 +30,8 @@ describe('Welcome sign-in', () => {
     expect(
       screen.getByRole('heading', { name: 'How LabLink solves the problem' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Intelligent slot booking' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Smart slots' })).toBeInTheDocument();
+    expect(screen.getByText('Intelligent slot booking')).toBeInTheDocument();
   });
 
   it('signs in as a guest', async () => {

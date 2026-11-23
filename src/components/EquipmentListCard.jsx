@@ -12,8 +12,8 @@ import HazardBadge from './HazardBadge.jsx';
 export default function EquipmentListCard({ data }) {
   const id = useId();
   return (
-    <article aria-labelledby={id} className="rounded-lg border border-slate-300 bg-white p-4">
-      <h2 id={id} className="font-semibold">
+    <article aria-labelledby={id} className="card p-5">
+      <h2 id={id} className="text-lg font-semibold text-slate-900">
         Recommended equipment
         {data.matchedExperiment ? ` for "${data.matchedExperiment.title}"` : ''}
       </h2>
@@ -31,7 +31,7 @@ export default function EquipmentListCard({ data }) {
             <p>
               <Link
                 to={`/equipment/${item.equipmentId}`}
-                className="font-semibold text-blue-900 underline"
+                className="font-semibold text-indigo-700 underline"
               >
                 {item.name}
               </Link>{' '}
@@ -46,7 +46,7 @@ export default function EquipmentListCard({ data }) {
               </span>
             </div>
             {!item.availableTomorrow && item.substitutes.length > 0 && (
-              <p className="mt-1 text-sm font-medium text-blue-950">
+              <p className="mt-1 text-sm font-medium text-indigo-950">
                 Substitute available: {item.substitutes.map((s) => s.name).join(', ')}
               </p>
             )}
@@ -54,7 +54,7 @@ export default function EquipmentListCard({ data }) {
         ))}
       </ul>
       {data.safetyNotes.length > 0 && (
-        <div className="mt-3 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+        <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
           <p className="font-semibold">
             <span aria-hidden="true">⚠ </span>Safety
           </p>

@@ -7,8 +7,6 @@ import { today } from '../lib/dates.js';
 import ErrorMessage from './ErrorMessage.jsx';
 import RequestDetails from './RequestDetails.jsx';
 
-const button = 'rounded-md px-4 py-2 font-semibold disabled:cursor-not-allowed disabled:opacity-60';
-
 /**
  * One pending request in the approval queue: Approve (locked when in conflict) or Reject with a
  * required comment.
@@ -57,17 +55,14 @@ export default function ApprovalItem({ request, inConflict, onDecided }) {
   };
 
   return (
-    <article
-      aria-labelledby={`${id}-title`}
-      className="rounded-lg border border-slate-200 bg-white p-4"
-    >
+    <article aria-labelledby={`${id}-title`} className="card p-5">
       <div className="flex flex-wrap items-center gap-2">
         <h2 id={`${id}-title`} className="text-lg font-semibold">
           {request.projectTitle}
         </h2>
         <span className="text-slate-700">by {request.studentName}</span>
         {request.facultyUid === user.uid && (
-          <span className="rounded-full border border-blue-300 bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-900">
+          <span className="rounded-full border border-indigo-300 bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">
             Your student
           </span>
         )}
@@ -76,7 +71,7 @@ export default function ApprovalItem({ request, inConflict, onDecided }) {
         <RequestDetails request={request} />
       </div>
       {inConflict && (
-        <p className="mt-3 rounded-md border border-orange-300 bg-orange-50 px-3 py-2 text-orange-950">
+        <p className="mt-3 rounded-lg border border-orange-300 bg-orange-50 px-3 py-2 text-orange-950">
           In conflict:{' '}
           <Link to="/conflicts" className="font-semibold underline">
             resolve on the Conflicts page
@@ -96,7 +91,7 @@ export default function ApprovalItem({ request, inConflict, onDecided }) {
             onChange={(event) => setComment(event.target.value)}
             aria-invalid={Boolean(commentError)}
             aria-describedby={commentError ? `${id}-comment-error` : undefined}
-            className="mt-1 w-full rounded-md border border-slate-400 px-3 py-2"
+            className="field"
           />
           {commentError && (
             <p id={`${id}-comment-error`} role="alert" className="text-sm text-red-800">
@@ -109,16 +104,11 @@ export default function ApprovalItem({ request, inConflict, onDecided }) {
             type="button"
             onClick={handleApprove}
             disabled={pending || inConflict}
-            className={`${button} bg-green-800 text-white hover:bg-green-900`}
+            className="btn-success"
           >
             Approve {label}
           </button>
-          <button
-            type="button"
-            onClick={handleReject}
-            disabled={pending}
-            className={`${button} border border-red-800 text-red-900 hover:bg-red-50`}
-          >
+          <button type="button" onClick={handleReject} disabled={pending} className="btn-danger">
             Reject {label}
           </button>
         </div>

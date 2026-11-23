@@ -1,19 +1,63 @@
 @import 'tailwindcss';
 
+/* System font stack only (the CSP blocks external fonts). */
+@theme {
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif;
+}
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    @apply bg-slate-50 font-sans text-slate-900 antialiased;
   }
 
   /* Visible focus for every interactive element (WCAG 2.4.7); never removed without a replacement. */
   :focus-visible {
-    outline: 3px solid var(--color-blue-700);
+    outline: 3px solid var(--color-indigo-600);
     outline-offset: 2px;
   }
+}
+
+/* Reusable design tokens (Tailwind v4 utilities). */
+@utility card {
+  @apply rounded-xl border border-slate-200 bg-white shadow-sm motion-safe:transition-shadow;
+}
+
+@utility card-hover {
+  @apply hover:shadow-md;
+}
+
+@utility btn {
+  @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60 motion-safe:transition-colors;
+}
+
+@utility btn-primary {
+  @apply btn bg-indigo-600 text-white hover:bg-indigo-700;
+}
+
+@utility btn-secondary {
+  @apply btn border border-slate-300 bg-white text-slate-800 hover:border-indigo-600 hover:text-indigo-700;
+}
+
+@utility btn-success {
+  @apply btn bg-teal-700 text-white hover:bg-teal-800;
+}
+
+@utility btn-danger {
+  @apply btn border border-red-700 bg-white text-red-800 hover:bg-red-50;
+}
+
+@utility field {
+  @apply mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-600;
+}
+
+@utility link {
+  @apply font-semibold text-indigo-700 underline-offset-4 hover:underline;
 }
 
 /* Respect users who ask for less motion. */

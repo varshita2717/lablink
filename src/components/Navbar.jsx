@@ -16,7 +16,11 @@ const LINKS = [
 ];
 
 const linkClass = ({ isActive }) =>
-  `rounded px-2 py-1 font-medium hover:bg-blue-800 ${isActive ? 'underline underline-offset-4' : ''}`;
+  `inline-flex min-h-10 items-center border-b-2 px-1 text-sm font-medium motion-safe:transition-colors ${
+    isActive
+      ? 'border-indigo-600 text-indigo-700'
+      : 'border-transparent text-slate-700 hover:border-slate-300 hover:text-slate-900'
+  }`;
 
 /** Main navigation: links by role, demo role switcher (demo mode only), user name and sign out. */
 export default function Navbar() {
@@ -40,7 +44,7 @@ export default function Navbar() {
 
   return (
     <nav aria-label="Main" className="flex flex-1 flex-wrap items-center gap-x-3 gap-y-2">
-      <ul className="flex flex-wrap items-center gap-1">
+      <ul className="flex flex-wrap items-center gap-x-4">
         {LINKS.filter((link) => !link.roles || link.roles.includes(user.role)).map((link) => (
           <li key={link.to}>
             <NavLink to={link.to} end={link.end} className={linkClass}>
@@ -52,7 +56,7 @@ export default function Navbar() {
       <div className="ml-auto flex flex-wrap items-center gap-3">
         {demoMode && (
           <div className="flex items-center gap-2">
-            <label htmlFor="demo-role" className="text-sm">
+            <label htmlFor="demo-role" className="text-sm font-medium text-slate-700">
               Role (demo)
             </label>
             <select
@@ -61,7 +65,7 @@ export default function Navbar() {
               onChange={handleRoleChange}
               disabled={switching}
               aria-describedby={roleError ? 'role-error' : undefined}
-              className="rounded border border-white/60 bg-blue-950 px-2 py-1 text-sm"
+              className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-800"
             >
               {ROLES.map((role) => (
                 <option key={role} value={role}>
@@ -70,20 +74,16 @@ export default function Navbar() {
               ))}
             </select>
             {roleError && (
-              <span id="role-error" role="alert" className="text-sm">
+              <span id="role-error" role="alert" className="text-sm text-red-800">
                 {friendlyError(roleError)}
               </span>
             )}
           </div>
         )}
-        <span className="text-sm">
-          {user.name} <span className="opacity-90">({ROLE_LABELS[user.role]})</span>
+        <span className="text-sm text-slate-700">
+          {user.name} <span className="text-slate-600">({ROLE_LABELS[user.role]})</span>
         </span>
-        <button
-          type="button"
-          onClick={signOut}
-          className="rounded border border-white/70 px-3 py-1 text-sm font-semibold hover:bg-blue-800"
-        >
+        <button type="button" onClick={signOut} className="btn-secondary min-h-9 px-3 py-1.5">
           Sign out
         </button>
       </div>

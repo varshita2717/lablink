@@ -14,12 +14,12 @@ export default function PlanCard({ card, onConfirm, onCancel }) {
   const id = useId();
   const { data } = card;
   return (
-    <article aria-labelledby={id} className="rounded-lg border border-slate-300 bg-white p-4">
-      <h2 id={id} className="font-semibold">
+    <article aria-labelledby={id} className="card p-5">
+      <h2 id={id} className="text-lg font-semibold text-slate-900">
         Plan for {data.project.title}
       </h2>
       <p
-        className={`mt-2 rounded-md px-3 py-1.5 font-semibold ${
+        className={`mt-2 rounded-lg px-3 py-1.5 font-semibold ${
           data.needsApproval ? 'bg-amber-100 text-amber-950' : 'bg-green-100 text-green-950'
         }`}
       >
@@ -38,7 +38,7 @@ export default function PlanCard({ card, onConfirm, onCancel }) {
         ))}
       </ul>
       {data.substitutions.length > 0 && (
-        <p className="mt-2 rounded-md border border-blue-300 bg-blue-50 px-3 py-1.5 text-sm text-blue-950">
+        <p className="mt-2 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-sm text-indigo-950">
           <span className="font-semibold">Substitution: </span>
           {data.substitutions
             .map((s) => `${s.replacement.name} replaces ${s.originalName}`)
@@ -57,7 +57,7 @@ export default function PlanCard({ card, onConfirm, onCancel }) {
         <p className="mt-1 text-sm text-amber-950">Fewer sessions were found than requested.</p>
       )}
       {data.safetyNotes.length > 0 && (
-        <div className="mt-3 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+        <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
           <p className="font-semibold">
             <span aria-hidden="true">⚠ </span>Safety
           </p>
