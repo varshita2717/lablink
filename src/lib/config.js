@@ -166,3 +166,11 @@ export function resolveAppCheckConfig(env) {
     debugToken: enabled && env?.DEV === true && debugToken ? debugToken : null,
   };
 }
+
+// ---------- AI retries ----------
+/** Retries after the first failed AI call (so at most AI_MAX_RETRIES + 1 attempts). */
+export const AI_MAX_RETRIES = 2;
+/** Wait before each retry: exponential backoff, 1 s then 3 s. */
+export const AI_RETRY_DELAYS_MS = [1000, 3000];
+/** Only overload and transient server errors are retried; other 4xx errors never are. */
+export const AI_RETRYABLE_STATUSES = [429, 500, 503];

@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { TOOL_ROUNDS_EXCEEDED_TEXT, createAgentSession, runToolLoop } from '../agent/agent.js';
+import {
+  TOOL_ROUNDS_EXCEEDED_TEXT,
+  aiErrorStatus,
+  createAgentSession,
+  isRetryableAIError,
+  runToolLoop,
+  withRetry,
+} from '../agent/agent.js';
+import { AppError } from '../errors.js';
 import { ERROR_CODES } from '../errors.js';
 
 vi.mock('../firebase.js', () => ({ db: {}, app: {}, appCheck: null }));
@@ -69,5 +77,71 @@ describe('createAgentSession', () => {
       code: ERROR_CODES.AI_UNAVAILABLE,
     });
     vi.restoreAllMocks();
+  });
+});
+
+const aiError = (status) =>
+  Object.assign(new Error(`AI: Error fetching [${status} Status] (AI/fetch-error)`), {
+    code: 'fetch-error',
+    customErrorData: { status },
+  });
+
+describe('isRetryableAIError', () => {
+  it.each([429, 500, 503])('retries %i', (status) => {
+    expect(isRetryableAIError(aiError(status))).toBe(true);
+  });
+
+  it.each([400, 401, 403, 404, 422, 501, 502])('never retries %i', (status) => {
+    expect(isRetryableAIError(aiError(status))).toBe(false);
+  });
+
+  it('never retries errors without a status or app validation errors', () => {
+    expect(isRetryableAIError(new TypeError('Failed to fetch'))).toBe(false);
+    expect(isRetryableAIError(new AppError(ERROR_CODES.INVALID_INPUT))).toBe(false);
+    expect(isRetryableAIError(null)).toBe(false);
+  });
+
+  it('reads the status from the message when customErrorData is missing', () => {
+    const error = new Error('AI: Error fetching from url: [503 Service Unavailable] high demand');
+    expect(aiErrorStatus(error)).toBe(503);
+    expect(isRetryableAIError(error)).toBe(true);
+  });
+});
+
+describe('withRetry', () => {
+  it('retries twice with 1 s then 3 s backoff, reporting each retry', async () => {
+    const sleep = vi.fn(async () => {});
+    const onRetry = vi.fn();
+    const call = vi
+      .fn()
+      .mockRejectedValueOnce(aiError(503))
+      .mockRejectedValueOnce(aiError(429))
+      .mockResolvedValueOnce('ok');
+    await expect(withRetry(call, { onRetry, sleep })).resolves.toBe('ok');
+    expect(call).toHaveBeenCalledTimes(3);
+    expect(sleep.mock.calls).toEqual([[1000], [3000]]);
+    expect(onRetry.mock.calls).toEqual([
+      [1, 1000],
+      [2, 3000],
+    ]);
+  });
+
+  it('gives up after 2 retries and rethrows the last error', async () => {
+    const sleep = vi.fn(async () => {});
+    const call = vi.fn().mockRejectedValue(aiError(500));
+    await expect(withRetry(call, { sleep })).rejects.toMatchObject({
+      customErrorData: { status: 500 },
+    });
+    expect(call).toHaveBeenCalledTimes(3);
+  });
+
+  it('does not retry a 400 validation error', async () => {
+    const sleep = vi.fn(async () => {});
+    const call = vi.fn().mockRejectedValue(aiError(400));
+    await expect(withRetry(call, { sleep })).rejects.toMatchObject({
+      customErrorData: { status: 400 },
+    });
+    expect(call).toHaveBeenCalledOnce();
+    expect(sleep).not.toHaveBeenCalled();
   });
 });

@@ -101,6 +101,36 @@ describe('AgentProvider', () => {
     vi.restoreAllMocks();
   });
 
+  it('flags retrying while the model is busy and clears it when the reply arrives', async () => {
+    let finish;
+    sessionSend.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    let onRetry;
+    vi.mocked(createAgentSession).mockImplementation((options) => {
+      onRetry = options.onRetry;
+      return { send: sessionSend };
+    });
+    render(tree(fakeAuth()));
+    let sending;
+    act(() => {
+      sending = probe.current.send('hello');
+    });
+    expect(probe.current.pending).toBe(true);
+    expect(probe.current.retrying).toBe(false);
+    act(() => onRetry(1, 1000));
+    expect(probe.current.retrying).toBe(true);
+    await act(async () => {
+      finish('Done');
+      await sending;
+    });
+    expect(probe.current.retrying).toBe(false);
+    expect(probe.current.pending).toBe(false);
+  });
+
   it('clears the conversation when the role changes', async () => {
     const auth = fakeAuth();
     const { rerender } = render(tree(auth));
