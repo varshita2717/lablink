@@ -122,8 +122,11 @@ export const SEARCH_DEBOUNCE_MS = 250;
 export const MAX_SEARCH_RESULTS = 8;
 
 // ---------- AI agent (Section 13) ----------
-/** Single place for the model name. Use a current Flash-class model. */
-export const AI_MODEL_NAME = 'gemini-2.5-flash';
+/**
+ * Single place for the model name: a current Flash-class model. Overridable at build time with
+ * VITE_AI_MODEL_NAME so a model retirement needs no code change.
+ */
+export const AI_MODEL_NAME = import.meta.env?.VITE_AI_MODEL_NAME || 'gemini-2.5-flash';
 export const AI_TEMPERATURE = 0.2;
 export const AI_MAX_OUTPUT_TOKENS = 1024;
 export const AI_RECOMMEND_MAX_OUTPUT_TOKENS = 1024;
@@ -132,3 +135,8 @@ export const MAX_MESSAGES_PER_MINUTE = 10;
 export const RATE_LIMIT_WINDOW_MS = 60_000;
 export const MAX_TOOL_ROUNDS = 6;
 export const MAX_RECOMMENDED_ITEMS = 8;
+export const MAX_FACULTY_NAME = 80;
+export const DEFAULT_PLAN_WEEKS = 2;
+/** Keyword search (recommendation fallback): points per word found in each field. */
+export const SEARCH_WEIGHTS = { name: 3, tags: 2, text: 1 };
+export const MIN_SEARCH_WORD_LENGTH = 3;

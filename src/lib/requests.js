@@ -23,11 +23,15 @@ import {
 } from './config.js';
 import { AppError, ERROR_CODES, isAppError } from './errors.js';
 import { addDays, horizonDates } from './dates.js';
-import { collectSafetyNotes } from './access.js';
+import { collectSafetyNotes, needsApproval } from './access.js';
 import { bookPlan, hoursByDate, loadAvailability, loadConfirmedBookings } from './booking.js';
 import { buildSubstitutes, loadActiveEquipment } from './inventory.js';
 import { countDistinctHours, findConflictGroups, resolveGroup } from './conflicts.js';
 import { planSessions } from './planner.js';
+import { validateDraftProjectArgs } from './validate.js';
+import { loadFaculty } from './users.js';
+
+const byId = (list) => Object.fromEntries(list.map((item) => [item.id, item]));
 
 const toList = (snapshot) =>
   snapshot.docs.map((d) => {
@@ -95,7 +99,7 @@ export async function loadPendingRequests() {
  */
 export async function loadConflictContext(today) {
   const [pending, equipment] = await Promise.all([loadPendingRequests(), loadActiveEquipment()]);
-  const equipmentById = Object.fromEntries(equipment.map((item) => [item.id, item]));
+  const equipmentById = byId(equipment);
   const involvedIds = new Set(pending.flatMap((r) => r.items.map((i) => i.equipmentId)));
   const involved = equipment.filter((item) => involvedIds.has(item.id));
   const availability = await loadAvailability(involved, horizonDates(today));
@@ -253,7 +257,7 @@ async function freshAlternatives(request, equipment, today) {
  */
 export async function approveRequest(request, staff, today) {
   const equipment = await loadActiveEquipment();
-  const equipmentById = Object.fromEntries(equipment.map((item) => [item.id, item]));
+  const equipmentById = byId(equipment);
   try {
     await bookRequest(request, equipmentById, staff);
     return { status: 'approved' };
@@ -328,7 +332,7 @@ export async function resolveConflict(requests, context, today) {
  */
 export async function confirmAllocation(resolution, requestsById, staff, today) {
   const equipment = await loadActiveEquipment();
-  const equipmentById = Object.fromEntries(equipment.map((item) => [item.id, item]));
+  const equipmentById = byId(equipment);
   const approved = [];
   const failedWinners = [];
   const losers = resolution.ranking.filter((entry) => !entry.isWinner);
@@ -356,4 +360,73 @@ export async function confirmAllocation(resolution, requestsById, staff, today) 
     await batch.commit();
   }
   return { approved, lost: losers.map((e) => e.requestId), failedWinners };
+}
+
+// ---------------------------------------------------------------- chat Confirm handlers
+
+/**
+ * Creates a project from a confirmed ProjectDraftCard. Re-validates the draft and the guide.
+ * @param {{ uid: string, name: string }} user The signed-in student.
+ * @param {{ title: string, description: string, deadline: string, stage: string,
+ *           facultyGuideUid: string }} draft
+ * @param {string} today
+ * @returns {Promise<string>} The new project ID.
+ * @throws {AppError} INVALID_INPUT for a bad draft or unknown guide; FirebaseError if rejected.
+ */
+export async function createProject(user, draft, today) {
+  const valid = validateDraftProjectArgs(draft, today);
+  const guide = (await loadFaculty()).find((member) => member.uid === draft.facultyGuideUid);
+  if (!guide) throw new AppError(ERROR_CODES.INVALID_INPUT, 'Unknown faculty guide');
+  const ref = doc(collection(db, 'projects'));
+  await setDoc(ref, {
+    title: valid.title,
+    description: valid.description,
+    ownerUid: user.uid,
+    ownerName: user.name,
+    facultyGuideUid: guide.uid,
+    facultyGuideName: guide.name,
+    deadline: valid.deadline,
+    stage: valid.stage,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+/**
+ * Confirms a PlanCard (SPEC 13.4). needsApproval is recomputed from current data: if any item
+ * needs approval the whole plan becomes one pending request; otherwise it is booked directly.
+ * @param {{ project: { id: string }, items: { equipmentId: string, qty: number }[],
+ *           sessions: object[], justification: string }} plan Built by code from stored planner output.
+ * @param {{ uid: string, name: string }} user
+ * @returns {Promise<{ type: 'request', requestId: string } | { type: 'booked', bookingIds: string[] }>}
+ * @throws {AppError} NOT_AUTHORIZED for someone else's project; EQUIPMENT_INACTIVE; booking errors.
+ */
+export async function confirmPlan(plan, user) {
+  const [equipment, projects] = await Promise.all([
+    loadActiveEquipment(),
+    loadMyProjects(user.uid),
+  ]);
+  const project = byId(projects)[plan.project.id];
+  if (!project) throw new AppError(ERROR_CODES.NOT_AUTHORIZED, 'Not your project');
+  const equipmentById = byId(equipment);
+  const items = plan.items.map(({ equipmentId, qty }) => {
+    const item = equipmentById[equipmentId];
+    if (!item) throw new AppError(ERROR_CODES.EQUIPMENT_INACTIVE, equipmentId);
+    return { equipment: item, qty };
+  });
+  if (needsApproval(items.map((i) => i.equipment))) {
+    const requestId = await createRequest({
+      user,
+      project,
+      items,
+      sessions: plan.sessions,
+      justification: plan.justification,
+    });
+    return { type: 'request', requestId };
+  }
+  const entries = plan.sessions.flatMap((session) =>
+    items.map(({ equipment: item, qty }) => ({ equipment: item, ...session, qty })),
+  );
+  const bookingIds = await bookPlan({ user, projectId: project.id, entries });
+  return { type: 'booked', bookingIds };
 }

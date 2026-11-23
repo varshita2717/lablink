@@ -41,6 +41,20 @@ protection comes from Firestore rules and App Check. `.env` is git-ignored: neve
 
 Security headers (CSP, HSTS, etc.), caching and the SPA fallback are configured in `firebase.json`.
 
+## App Check and the AI assistant
+
+- **App Check is optional.** It starts only when `VITE_RECAPTCHA_SITE_KEY` (a reCAPTCHA v3 site
+  key) is set; without it the app runs normally and logs nothing. If initialisation fails, the
+  error is logged once and the app continues without App Check.
+- **The assistant needs App Check in practice.** Firebase AI Logic can enforce App Check (and may
+  do so by default), in which case AI calls without a valid token are rejected. The chat then shows
+  "The assistant is unavailable right now" with a link to the Catalogue, which works without AI.
+  To enable it: register the web app with reCAPTCHA v3 in App Check, add your
+  `<project-id>.web.app` and `.firebaseapp.com` domains to the key, set `VITE_RECAPTCHA_SITE_KEY`,
+  rebuild and redeploy. Limited-use App Check tokens are used for AI Logic calls.
+- **Model:** `AI_MODEL_NAME` in `src/lib/config.js` (default `gemini-2.5-flash`). Set
+  `VITE_AI_MODEL_NAME` to switch models without a code change, e.g. when a model is retired.
+
 ## Seed the demo data
 
 1. In the Firebase console, enable the **Google** and **Anonymous** sign-in providers and create
