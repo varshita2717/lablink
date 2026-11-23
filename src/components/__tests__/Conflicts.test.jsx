@@ -16,6 +16,13 @@ import {
 } from '../../lib/requests.js';
 
 vi.mock('../../lib/firebase.js', () => ({ db: {}, auth: {} }));
+vi.mock('../../lib/agent/explain.js', () => ({
+  templateExplanation: vi.fn(() => 'Template: Aarav Sharma is allocated with a score of 0.86.'),
+  explainAllocation: vi.fn(async () => ({
+    text: 'AI says Aarav Sharma wins with 0.86.',
+    source: 'ai',
+  })),
+}));
 vi.mock('../../lib/requests.js', () => ({
   approveRequest: vi.fn(),
   rejectRequest: vi.fn(),
@@ -38,8 +45,14 @@ describe('RankingTable', () => {
 });
 
 describe('ExplanationCard', () => {
+  it('shows the template first, labelled as formula-generated, while the AI summary loads', () => {
+    render(<ExplanationCard text="Template text." pending />);
+    expect(screen.getByText(/Summary generated from the scoring formula/)).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Writing an AI summary…');
+  });
+
   it('is a labelled article with a source note', async () => {
-    const { container } = render(<ExplanationCard text="Aarav wins." />);
+    const { container } = render(<ExplanationCard text="Aarav wins." source="ai" />);
     expect(screen.getByRole('article', { name: 'Why this allocation' })).toHaveTextContent(
       'Aarav wins.',
     );
@@ -75,9 +88,12 @@ describe('ConflictGroup', () => {
     expect(
       await screen.findByRole('table', { name: 'Ranking for conflict 1' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('article', { name: 'Why this allocation' })).toHaveTextContent(
-      'Aarav Sharma (Radar signal analyser) is allocated with a score of 0.86',
-    );
+    const card = screen.getByRole('article', { name: 'Why this allocation' });
+    // The AI summary replaces the template and is labelled as AI-generated.
+    expect(
+      await within(card).findByText('AI says Aarav Sharma wins with 0.86.'),
+    ).toBeInTheDocument();
+    expect(card).toHaveTextContent('AI-generated summary; the ranking comes from the formula');
     expect(await axe(container)).toHaveNoViolations();
     await user.click(screen.getByRole('button', { name: 'Confirm allocation for conflict 1' }));
     expect(confirmAllocation).toHaveBeenCalledWith(

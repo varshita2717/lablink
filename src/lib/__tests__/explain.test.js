@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { templateExplanation } from '../agent/explain.js';
+import { describe, expect, it, vi } from 'vitest';
+import { explainAllocation, templateExplanation } from '../agent/explain.js';
+
+vi.mock('../firebase.js', () => ({ db: {}, app: {}, appCheck: null }));
 
 const entry = (overrides) => ({
   requestId: 'r',
@@ -86,5 +88,46 @@ describe('templateExplanation', () => {
   it('returns an empty string for an empty resolution', () => {
     expect(templateExplanation({ ranking: [] })).toBe('');
     expect(templateExplanation(null)).toBe('');
+  });
+});
+
+describe('explainAllocation', () => {
+  const AI_TEXT =
+    'Aarav Sharma gets the oscilloscope with 0.86: his deadline is closest and he used the lab least. Rohan Das (0.62) is offered Thu 26 Nov, 10:00–12:00. Meera Iyer (0.36) has no slot before her deadline.';
+
+  it('returns the AI text and sends the rounded numbers with the no-re-ranking rule', async () => {
+    const generate = vi.fn(async () => `  ${AI_TEXT}  `);
+    const result = await explainAllocation(resolution, { generate });
+    expect(result).toEqual({ text: AI_TEXT, source: 'ai' });
+    const [prompt, options] = generate.mock.calls[0];
+    expect(prompt).toContain('"total":0.86');
+    expect(prompt).toContain('"total":0.62');
+    expect(prompt).toContain('Do not change, question or re-rank it');
+    expect(options.maxOutputTokens).toBeGreaterThan(0);
+  });
+
+  it.each([
+    [
+      'fails',
+      async () =>
+        Promise.reject(Object.assign(new Error('busy'), { customErrorData: { status: 503 } })),
+    ],
+    ['returns nothing', async () => '   '],
+    ['is too long', async () => `Aarav ${'x'.repeat(1000)}`],
+    ['does not name the winner', async () => 'Someone else wins.'],
+  ])('falls back to the template when the model %s', async (_label, generate) => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const result = await explainAllocation(resolution, { generate });
+    expect(result).toEqual({ text: templateExplanation(resolution), source: 'template' });
+    vi.restoreAllMocks();
+  });
+
+  it('does not call the model for an empty resolution', async () => {
+    const generate = vi.fn();
+    expect(await explainAllocation({ ranking: [] }, { generate })).toEqual({
+      text: '',
+      source: 'template',
+    });
+    expect(generate).not.toHaveBeenCalled();
   });
 });

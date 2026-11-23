@@ -106,6 +106,23 @@ async function generateRecommendationJson(description, equipment, experiments, r
   return result.response.text();
 }
 
+/**
+ * One plain-text generation (used for the allocation explanation), with the same retry policy.
+ * @param {string} prompt
+ * @param {{ maxOutputTokens: number, onRetry?: (attempt: number, delayMs: number) => void }} options
+ * @returns {Promise<string>} The model's text.
+ * @throws The last AI error once retries are exhausted.
+ */
+export async function generateText(prompt, { maxOutputTokens, onRetry } = {}) {
+  const { mod, ai } = await loadAI();
+  const model = mod.getGenerativeModel(ai, {
+    model: AI_MODEL_NAME,
+    generationConfig: { temperature: AI_TEMPERATURE, maxOutputTokens },
+  });
+  const result = await withRetry(() => model.generateContent(prompt), { onRetry });
+  return result.response.text();
+}
+
 const DEFAULT_DEPS = {
   loadActiveEquipment,
   loadExperiments,

@@ -1,7 +1,7 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import useAuth from '../hooks/useAuth.js';
 import { confirmAllocation, resolveConflict } from '../lib/requests.js';
-import { templateExplanation } from '../lib/agent/explain.js';
+import { explainAllocation, templateExplanation } from '../lib/agent/explain.js';
 import { today } from '../lib/dates.js';
 import { formatSession } from '../lib/format.js';
 import ErrorMessage from './ErrorMessage.jsx';
@@ -19,7 +19,35 @@ export default function ConflictGroup({ index, requests, context, onConfirmed })
   const [resolution, setResolution] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  const [explanation, setExplanation] = useState(null);
   const equipmentNames = [...new Set(requests.flatMap((r) => r.items.map((i) => i.equipmentName)))];
+
+  // Template text shows at once; the AI summary replaces it when (and if) it arrives.
+  useEffect(() => {
+    if (!resolution) return undefined;
+    let current = true;
+    explainAllocation(resolution, {
+      onRetry: () =>
+        current &&
+        setExplanation({
+          text: templateExplanation(resolution),
+          source: 'template',
+          resolution,
+          pending: true,
+          retrying: true,
+        }),
+    }).then((result) => {
+      if (current) setExplanation({ ...result, resolution, pending: false, retrying: false });
+    });
+    return () => {
+      current = false;
+    };
+  }, [resolution]);
+
+  const explained =
+    explanation?.resolution === resolution
+      ? explanation
+      : { text: templateExplanation(resolution), source: 'template', pending: true };
 
   const run = async (action) => {
     setBusy(true);
@@ -77,7 +105,12 @@ export default function ConflictGroup({ index, requests, context, onConfirmed })
       {resolution && (
         <div className="mt-4 space-y-4">
           <RankingTable resolution={resolution} caption={`Ranking for conflict ${index + 1}`} />
-          <ExplanationCard text={templateExplanation(resolution)} />
+          <ExplanationCard
+            text={explained.text}
+            source={explained.source}
+            pending={explained.pending}
+            retrying={explained.retrying}
+          />
           <button type="button" onClick={handleConfirm} disabled={busy} className="btn-success">
             Confirm allocation for conflict {index + 1}
           </button>

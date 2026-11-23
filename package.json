@@ -16,6 +16,8 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:rules": "vitest run --config vitest.rules.config.js",
+    "emulator:rules": "firebase emulators:exec --only firestore --project demo-lablink \"npm run test:rules\"",
     "deploy:rules": "firebase deploy --only firestore:rules,firestore:indexes",
     "deploy": "npm run build && firebase deploy --only hosting"
   },
