@@ -269,8 +269,8 @@ MCP server (the in-app agent uses ordinary function calling; MCP would only matt
 | Auth | Firebase Authentication: Google provider + Anonymous provider |
 | Database | Cloud Firestore |
 | GenAI | Firebase AI Logic (Gemini Developer API backend) via the Firebase JS SDK, with function calling and JSON output |
-| Abuse protection | Firebase App Check (reCAPTCHA Enterprise), enforced for AI Logic |
-| Hosting | **Google Cloud Run** (nginx container serving the built app), region `asia-south1` |
+| Abuse protection | Firebase App Check (**reCAPTCHA v3**, `ReCaptchaV3Provider`), enforced for AI Logic. reCAPTCHA Enterprise was dropped because it needs billing |
+| Hosting | **Firebase Hosting** (static `dist/`, SPA rewrite, security headers in `firebase.json`). Cloud Run was dropped because it needs a billing account and this project must run on the no-billing (Spark) plan |
 | Tests | Vitest, Testing Library, jest-axe, `@firebase/rules-unit-testing` (Firestore emulator) |
 | CI | GitHub Actions |
 | Language | JavaScript |
@@ -352,12 +352,17 @@ src/
     RankingTable, ExplanationCard, UtilisationTable, AuditLogTable
 ```
 
-### 5.5 Deployment (Cloud Run)
-- Build locally with `.env` present (Vite inlines `VITE_` variables **at build time**; Cloud Run runtime variables do **not** reach the browser bundle).
-- `gcloud run deploy --source .` builds the `Dockerfile` (Appendix C), which copies `dist/` into a non-root nginx image listening on **8080**.
-- `.gcloudignore` must **not** ignore `dist/` (without one, gcloud falls back to `.gitignore`, which does).
-- After the first deploy, add the `*.run.app` host to **Firebase Auth → Authorized domains** and to the **reCAPTCHA Enterprise key's domains**.
+### 5.5 Deployment (Firebase Hosting)
+
+> **No billing allowed.** Cloud Run and reCAPTCHA Enterprise both require a billing account, so v3 deploys to **Firebase Hosting** (free Spark plan) and uses **App Check with reCAPTCHA v3**. This section, Appendix C and Appendix E override every other mention of Cloud Run, nginx, Docker, `gcloud`, `.gcloudignore`/`.dockerignore`, reCAPTCHA Enterprise or `VITE_RECAPTCHA_ENTERPRISE_SITE_KEY` elsewhere in this spec (Sections 0, 2.2, 2.3, 5.3, 5.4, 18, 20, FAST TRACK and Appendix F).
+
+- Build locally with `.env` present (Vite inlines `VITE_` variables **at build time**).
+- `npm run deploy` = `npm run build && firebase deploy --only hosting`. It uploads `dist/` as configured in `firebase.json` (Appendix C). The live URL is `https://<project-id>.web.app`.
+- The `firebase` CLI comes from the `firebase-tools` dev dependency, so the scripts work the same in Windows PowerShell, cmd and bash. Run `npx firebase login` once.
 - Deploy rules and indexes with `npm run deploy:rules`.
+- `<project-id>.web.app` and `<project-id>.firebaseapp.com` are already Firebase Auth authorized domains; add both to the **reCAPTCHA v3 key's domains**.
+- App Check: `ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY)`, enforced for AI Logic in the console.
+- Security headers, caching and the SPA fallback all come from `firebase.json` (there is no nginx and no container).
 - **Deploy in Segment 1** and redeploy after every segment, so a live URL always exists.
 
 ---
@@ -1051,72 +1056,35 @@ service cloud.firestore {
 }
 ```
 
-## Appendix C: Container and web server
+## Appendix C: Firebase Hosting (`firebase.json`)
 
-**`Dockerfile`**
-```dockerfile
-# Serves the prebuilt Vite app (dist/) from a non-root nginx on port 8080 for Cloud Run.
-FROM nginxinc/nginx-unprivileged:1.27-alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY security-headers.conf /etc/nginx/security-headers.conf
-COPY dist/ /usr/share/nginx/html/
-EXPOSE 8080
-```
+Replaces the v3 Cloud Run container (Dockerfile, nginx, `.gcloudignore`, `.dockerignore`), which needed billing. Hosting serves `dist/`, rewrites every route to `/index.html` (SPA), sets the security headers on every response, caches hashed `/assets/*.js|css` for a year (`immutable`), and sends `no-cache` for HTML and extension-less SPA routes.
 
-**`nginx.conf`**
-```nginx
-server {
-  listen 8080;
-  server_name _;
-  root /usr/share/nginx/html;
-  index index.html;
-  server_tokens off;
-
-  gzip on;
-  gzip_min_length 1024;
-  gzip_types text/css application/javascript application/json image/svg+xml;
-
-  # Hashed build assets: cache for a year.
-  location /assets/ {
-    include /etc/nginx/security-headers.conf;
-    add_header Cache-Control "public, max-age=31536000, immutable" always;
-    try_files $uri =404;
-  }
-
-  # SPA fallback: every route serves index.html, never cached.
-  location / {
-    include /etc/nginx/security-headers.conf;
-    add_header Cache-Control "no-cache" always;
-    try_files $uri $uri/ /index.html;
+```json
+{
+  "firestore": { "rules": "firestore.rules", "indexes": "firestore.indexes.json" },
+  "hosting": {
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [{ "source": "**", "destination": "/index.html" }],
+    "headers": [
+      { "source": "**", "headers": [
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' https://apis.google.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; connect-src 'self' https://*.googleapis.com https://www.google.com; frame-src https://*.firebaseapp.com https://accounts.google.com https://www.google.com/recaptcha/ https://recaptcha.google.com; img-src 'self' data: https://*.googleusercontent.com https://www.gstatic.com; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" },
+        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin-allow-popups" } ] },
+      { "source": "**/!(*.*)", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
+      { "source": "**/*.html", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
+      { "source": "/assets/**/*.@(js|css)",
+        "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] }
+    ]
   }
 }
 ```
-
-**`security-headers.conf`** (included in every `location` because nginx does not inherit `add_header` into a location that declares its own)
-```nginx
-add_header Content-Security-Policy "default-src 'self'; script-src 'self' https://apis.google.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; connect-src 'self' https://*.googleapis.com https://www.google.com; frame-src https://*.firebaseapp.com https://accounts.google.com https://www.google.com/recaptcha/ https://recaptcha.google.com; img-src 'self' data: https://*.googleusercontent.com https://www.gstatic.com; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
-add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-add_header X-Content-Type-Options "nosniff" always;
-add_header X-Frame-Options "DENY" always;
-add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
-add_header Cross-Origin-Opener-Policy "same-origin-allow-popups" always;
-```
-After deploying, open the live app with DevTools open. If sign-in, App Check or AI calls are blocked, the console names the blocked origin; add exactly that origin to the right directive. Never use `*` or `'unsafe-eval'`.
-
-**`.gcloudignore`** (must NOT exclude `dist/`)
-```
-.git/
-.github/
-node_modules/
-src/
-tests/
-coverage/
-.env
-.env.*
-```
-
-**`.dockerignore`**: the same entries.
+The committed `firebase.json` also holds the Firestore emulator settings. After deploying, open the live app with DevTools open. If sign-in, App Check or AI calls are blocked, the console names the blocked origin; add exactly that origin to the right CSP directive. Never use `*` or `'unsafe-eval'`. Check headers with `curl -I https://<project-id>.web.app`.
 
 ## Appendix D: `.github/workflows/ci.yml`
 
@@ -1159,7 +1127,8 @@ VITE_FIREBASE_AUTH_DOMAIN=
 VITE_FIREBASE_PROJECT_ID=
 VITE_FIREBASE_APP_ID=
 VITE_FIREBASE_MESSAGING_SENDER_ID=
-VITE_RECAPTCHA_ENTERPRISE_SITE_KEY=
+# reCAPTCHA v3 site key for App Check (ReCaptchaV3Provider). v3, not Enterprise: no billing.
+VITE_RECAPTCHA_SITE_KEY=
 # Local development only: App Check debug token (never set in production builds)
 VITE_APPCHECK_DEBUG_TOKEN=
 ```
