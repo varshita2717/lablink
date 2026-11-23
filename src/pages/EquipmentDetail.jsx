@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import useAsync from '../hooks/useAsync.js';
+import useAuth from '../hooks/useAuth.js';
 import useDocumentTitle from '../hooks/useDocumentTitle.js';
 import { loadAvailability } from '../lib/booking.js';
 import { horizonDates, today } from '../lib/dates.js';
@@ -10,6 +11,7 @@ import BookingForm from '../components/BookingForm.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import HazardBadge from '../components/HazardBadge.jsx';
+import RequestForm from '../components/RequestForm.jsx';
 import SlotPicker from '../components/SlotPicker.jsx';
 import Spinner from '../components/Spinner.jsx';
 
@@ -26,6 +28,7 @@ async function loadDetail(id) {
 export default function EquipmentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const loader = useCallback(() => loadDetail(id), [id]);
   const { data, error, loading, reload } = useAsync(loader);
   const item = data?.item;
@@ -102,18 +105,25 @@ export default function EquipmentDetail() {
         ) : (
           <div className="space-y-4">
             <p className="text-muted">
-              This equipment needs faculty approval. Ask the assistant to plan your sessions and
-              prepare a request for your faculty guide.
+              This equipment needs faculty approval. Ask the assistant to plan your sessions, or
+              pick a time below and send the request to your faculty guide yourself.
             </p>
-            <button type="button" onClick={requestViaChat} className="btn-primary">
+            <button type="button" onClick={requestViaChat} className="btn-secondary">
               Request this via chat
             </button>
-            <SlotPicker
-              caption={`Free units of ${item.name} per hour (out of ${item.quantity})`}
-              dates={data.dates}
-              remainingByDate={data.remainingByDate}
-              quantity={item.quantity}
-            />
+            {user.role === 'student' ? (
+              <RequestForm item={item} dates={data.dates} remainingByDate={data.remainingByDate} />
+            ) : (
+              <>
+                <p className="text-sm text-muted">Only students can send access requests.</p>
+                <SlotPicker
+                  caption={`Free units of ${item.name} per hour (out of ${item.quantity})`}
+                  dates={data.dates}
+                  remainingByDate={data.remainingByDate}
+                  quantity={item.quantity}
+                />
+              </>
+            )}
           </div>
         )}
       </section>
