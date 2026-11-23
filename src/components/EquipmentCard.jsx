@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import AccessBadge from './AccessBadge.jsx';
 import HazardBadge from './HazardBadge.jsx';
 import StatusBadge from './StatusBadge.jsx';
@@ -14,7 +15,12 @@ export default function EquipmentCard({ item, utilisation }) {
       className="flex h-full flex-col rounded-lg border border-slate-200 bg-white p-4"
     >
       <h3 id={headingId} className="text-lg font-semibold text-slate-900">
-        {item.name}
+        <Link
+          to={`/equipment/${item.id}`}
+          className="rounded text-blue-900 underline-offset-4 hover:underline"
+        >
+          {item.name}
+        </Link>
       </h3>
       <p className="text-sm text-slate-700">
         {item.category} · {item.labName} · {item.department}

@@ -20,6 +20,9 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
     sourcemap: false,
+    // The Firestore SDK alone is ~500 kB minified (~150 kB gzip) and is needed on every page,
+    // so it cannot be split further. App chunks stay far below this limit.
+    chunkSizeWarningLimit: 600,
     rolldownOptions: {
       output: {
         codeSplitting: { groups: VENDOR_GROUPS },

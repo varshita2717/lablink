@@ -7,6 +7,7 @@ import { friendlyError } from '../lib/format.js';
 // Links appear here as their pages are built. `roles` hides links a role cannot use.
 const LINKS = [
   { to: '/catalogue', label: 'Catalogue' },
+  { to: '/my-bookings', label: 'My Bookings' },
   { to: '/admin', label: 'Admin', roles: ['admin'] },
 ];
 

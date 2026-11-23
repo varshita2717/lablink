@@ -7,6 +7,8 @@ import RequireRole from './components/RequireRole.jsx';
 
 const Welcome = lazy(() => import('./pages/Welcome.jsx'));
 const Catalogue = lazy(() => import('./pages/Catalogue.jsx'));
+const EquipmentDetail = lazy(() => import('./pages/EquipmentDetail.jsx'));
+const MyBookings = lazy(() => import('./pages/MyBookings.jsx'));
 const Admin = lazy(() => import('./pages/Admin.jsx'));
 const NotFound = lazy(() => import('./pages/NotFound.jsx'));
 
@@ -33,6 +35,22 @@ export default function App() {
                 element={
                   <RequireRole>
                     <Catalogue />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/equipment/:id"
+                element={
+                  <RequireRole>
+                    <EquipmentDetail />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/my-bookings"
+                element={
+                  <RequireRole>
+                    <MyBookings />
                   </RequireRole>
                 }
               />
