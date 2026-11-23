@@ -1,7 +1,12 @@
 // Cached loaders for reference data, plus the PURE catalogue filter.
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from './firebase.js';
-import { INVENTORY_CACHE_MS, SLOT_END_HOUR, SLOT_START_HOUR } from './config.js';
+import {
+  INVENTORY_CACHE_MS,
+  MAX_SEARCH_RESULTS,
+  SLOT_END_HOUR,
+  SLOT_START_HOUR,
+} from './config.js';
 
 const cache = new Map();
 
@@ -131,4 +136,35 @@ export function buildSubstitutes(equipment, equipmentIds) {
     if (others.length) result[id] = others;
   }
   return result;
+}
+
+/**
+ * PURE: autocomplete suggestions for the catalogue search. Case-insensitive; ranks names that start
+ * with the query, then names containing it, then tag matches, then category matches. Items that
+ * are disabled or proposed are never suggested. Ties keep the input order.
+ * @param {string} query Text typed by the user.
+ * @param {object[]} equipmentList Equipment (e.g. the cached active list).
+ * @param {number} [limit] Maximum suggestions.
+ * @returns {object[]} Matching items, best first.
+ */
+export function suggestEquipment(query, equipmentList, limit = MAX_SEARCH_RESULTS) {
+  const text = String(query ?? '')
+    .trim()
+    .toLowerCase();
+  if (!text) return [];
+  const rankOf = (item) => {
+    const name = item.name.toLowerCase();
+    if (name.startsWith(text)) return 0;
+    if (name.includes(text)) return 1;
+    if ((item.tags ?? []).some((tag) => tag.toLowerCase().includes(text))) return 2;
+    if ((item.category ?? '').toLowerCase().includes(text)) return 3;
+    return null;
+  };
+  return equipmentList
+    .filter((item) => (item.status ?? 'active') === 'active')
+    .map((item, index) => ({ item, index, rank: rankOf(item) }))
+    .filter((entry) => entry.rank !== null)
+    .sort((a, b) => a.rank - b.rank || a.index - b.index)
+    .slice(0, limit)
+    .map((entry) => entry.item);
 }
